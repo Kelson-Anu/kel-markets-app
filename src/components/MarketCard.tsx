@@ -1,0 +1,48 @@
+import { Link } from "@tanstack/react-router";
+import { Sparkline } from "./Sparkline";
+import { cents, usd, type Market } from "@/lib/markets";
+
+export function MarketCard({ market }: { market: Market }) {
+  const up = market.change24h >= 0;
+  return (
+    <Link
+      to="/market/$marketId"
+      params={{ marketId: market.id }}
+      className="group flex flex-col gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+    >
+      <div className="flex items-center gap-3">
+        <span className="rounded-sm bg-secondary px-2 py-0.5 text-[11px] uppercase tracking-widest text-muted-foreground">
+          {market.category}
+        </span>
+        <span className="num ml-auto text-xs text-muted-foreground">
+          {usd(market.volume)} vol
+        </span>
+      </div>
+
+      <h3 className="text-base font-semibold leading-snug">{market.question}</h3>
+
+      <div className="mt-auto flex items-end gap-4">
+        <div>
+          <div className="num text-3xl font-bold leading-none">{cents(market.yesPrice)}</div>
+          <div
+            className="num mt-1 text-xs font-medium"
+            style={{ color: up ? "var(--yes)" : "var(--no)" }}
+          >
+            {up ? "+" : ""}
+            {market.change24h.toFixed(1)} pts
+          </div>
+        </div>
+        <Sparkline data={market.history} up={up} className="h-10 flex-1" />
+      </div>
+
+      <div className="flex gap-2">
+        <span className="flex-1 rounded-md border border-yes/40 bg-yes/10 py-2 text-center text-sm font-semibold text-yes">
+          Yes {cents(market.yesPrice)}
+        </span>
+        <span className="flex-1 rounded-md border border-no/40 bg-no/10 py-2 text-center text-sm font-semibold text-no">
+          No {cents(1 - market.yesPrice)}
+        </span>
+      </div>
+    </Link>
+  );
+}
