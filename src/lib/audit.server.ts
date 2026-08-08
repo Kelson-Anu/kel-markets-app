@@ -12,7 +12,7 @@ export async function logAudit(entry: {
     market_id: entry.marketId,
     market_question: entry.marketQuestion,
     action: entry.action,
-    details: entry.details ?? {},
+    details: (entry.details ?? {}) as unknown as never,
     actor_id: entry.actorId,
     actor_email: entry.actorEmail,
   });
