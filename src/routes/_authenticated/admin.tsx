@@ -328,9 +328,18 @@ function AdminPage() {
             </select>
 
             <label className="mt-4 block text-[11px] uppercase tracking-widest text-muted-foreground">
+              Tags (comma separated)
+            </label>
+            <input
+              value={draft.tags.join(", ")}
+              onChange={(e) => setDraft({ ...draft, tags: parseTags(e.target.value) })}
+              placeholder="election, fed, ai"
+              className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+            />
+
+            <label className="mt-4 block text-[11px] uppercase tracking-widest text-muted-foreground">
               Resolution rules
             </label>
-            <div className="hidden" />
             <textarea
               rows={4}
               maxLength={2000}
