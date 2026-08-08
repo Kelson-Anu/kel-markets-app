@@ -2,26 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fromRow, type MarketRow } from "./markets";
-
-const COLUMNS =
-  "id, question, category, description, yes_price, change_24h, volume, liquidity, closes, history, status, resolution";
-
-function publicClient() {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  return createClient(process.env["SUPABASE_URL"]!, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-          h.delete("Authorization");
-        }
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-}
+import { COLUMNS, publicClient, assertAdmin, slugify } from "./market-helpers";
 
 export const listPublicMarkets = createServerFn({ method: "GET" }).handler(async () => {
   const { data, error } = await publicClient()
@@ -45,15 +26,6 @@ export const getPublicMarket = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return row ? fromRow(row as MarketRow) : null;
   });
-
-async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden: admin access required");
-}
 
 export const getAdminStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -108,16 +80,6 @@ export type MarketInput = {
   closes: string;
   status: "draft" | "published";
 };
-
-function slugify(s: string) {
-  return (
-    s
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 48) || "market"
-  );
-}
 
 export const saveMarket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
