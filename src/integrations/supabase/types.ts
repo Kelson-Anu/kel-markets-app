@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      market_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          market_id: string
+          market_question: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          market_id: string
+          market_question?: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          market_id?: string
+          market_question?: string
+        }
+        Relationships: []
+      }
       markets: {
         Row: {
           category: string
@@ -28,6 +61,7 @@ export type Database = {
           question: string
           resolution: string | null
           status: string
+          tags: string[]
           updated_at: string
           volume: number
           yes_price: number
@@ -45,6 +79,7 @@ export type Database = {
           question: string
           resolution?: string | null
           status?: string
+          tags?: string[]
           updated_at?: string
           volume?: number
           yes_price?: number
@@ -62,9 +97,40 @@ export type Database = {
           question?: string
           resolution?: string | null
           status?: string
+          tags?: string[]
           updated_at?: string
           volume?: number
           yes_price?: number
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          market_id: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          market_id?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          market_id?: string | null
+          title?: string
+          user_id?: string | null
         }
         Relationships: []
       }
