@@ -5,9 +5,9 @@ import { cents } from "@/lib/markets";
 import { marketsQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
 
-const title = "Your portfolio — KELMARKETS";
+const title = "Your portfolio — KELMARKET";
 const description =
-  "Track your open YES and NO positions on KELMARKETS, see live profit and loss, and cash out at the current market price.";
+  "Track your open YES and NO positions on KELMARKET, see live profit and loss, and cash out at the current market price.";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({

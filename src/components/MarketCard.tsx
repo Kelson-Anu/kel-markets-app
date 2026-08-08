@@ -21,6 +21,19 @@ export function MarketCard({ market }: { market: Market }) {
 
       <h3 className="text-base font-semibold leading-snug">{market.question}</h3>
 
+      {market.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {market.tags.slice(0, 4).map((t) => (
+            <span
+              key={t}
+              className="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground"
+            >
+              #{t}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="mt-auto flex items-end gap-4">
         <div>
           <div className="num text-3xl font-bold leading-none">{cents(market.yesPrice)}</div>

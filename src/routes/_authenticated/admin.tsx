@@ -1,15 +1,22 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { MARKET_CATEGORIES, cents, type Market } from "@/lib/markets";
-import { adminMarketsQuery, adminStatusQuery } from "@/lib/market-queries";
+import { MARKET_CATEGORIES, cents, parseTags, type Market } from "@/lib/markets";
+import {
+  adminMarketsQuery,
+  adminStatusQuery,
+  adminsQuery,
+  auditLogQuery,
+} from "@/lib/market-queries";
 import {
   claimAdmin,
   deleteMarket,
+  grantAdmin,
   resolveMarket,
+  revokeAdmin,
   saveMarket,
   setMarketStatus,
 } from "@/lib/markets.functions";
@@ -17,10 +24,10 @@ import {
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Market admin — KELMARKETS" },
-      { name: "description", content: "Create, publish and resolve KELMARKETS prediction markets." },
-      { property: "og:title", content: "Market admin — KELMARKETS" },
-      { property: "og:description", content: "Create, publish and resolve KELMARKETS markets." },
+      { title: "Market admin — KELMARKET" },
+      { name: "description", content: "Create, publish and resolve KELMARKET prediction markets." },
+      { property: "og:title", content: "Market admin — KELMARKET" },
+      { property: "og:description", content: "Create, publish and resolve KELMARKET markets." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -35,6 +42,7 @@ type Draft = {
   yesPrice: number;
   closes: string;
   status: "draft" | "published";
+  tags: string[];
 };
 
 const emptyDraft: Draft = {
@@ -44,6 +52,7 @@ const emptyDraft: Draft = {
   yesPrice: 0.5,
   closes: "",
   status: "draft",
+  tags: [],
 };
 
 function AdminPage() {
@@ -53,6 +62,10 @@ function AdminPage() {
   const isAdmin = status.data?.isAdmin ?? false;
   const markets = useQuery({ ...adminMarketsQuery, enabled: isAdmin });
   const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [tab, setTab] = useState<"markets" | "activity" | "admins">("markets");
+  const [newAdmin, setNewAdmin] = useState("");
+  const audit = useQuery({ ...auditLogQuery, enabled: isAdmin && tab === "activity" });
+  const admins = useQuery({ ...adminsQuery, enabled: isAdmin && tab === "admins" });
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["markets"] });
@@ -92,6 +105,23 @@ function AdminPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+  const addAdmin = useMutation({
+    mutationFn: (email: string) => grantAdmin({ data: { email } }),
+    onSuccess: () => {
+      toast.success("Admin access granted");
+      setNewAdmin("");
+      qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError,
+  });
+  const dropAdmin = useMutation({
+    mutationFn: (userId: string) => revokeAdmin({ data: { userId } }),
+    onSuccess: () => {
+      toast.success("Admin access revoked");
+      qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError,
+  });
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -109,6 +139,7 @@ function AdminPage() {
       yesPrice: m.yesPrice,
       closes: m.closes,
       status: m.status,
+      tags: m.tags,
     });
 
   if (status.isLoading) {
@@ -166,7 +197,101 @@ function AdminPage() {
           </button>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.4fr]">
+        <div className="mt-6 flex gap-1.5">
+          {(["markets", "activity", "admins"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`rounded-full border px-3.5 py-1.5 text-sm capitalize transition-colors ${
+                tab === t
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t === "activity" ? "Activity log" : t}
+            </button>
+          ))}
+        </div>
+
+        {tab === "activity" && (
+          <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card">
+            {audit.isLoading && <p className="p-6 text-sm text-muted-foreground">Loading…</p>}
+            {audit.data?.length === 0 && (
+              <p className="p-10 text-center text-sm text-muted-foreground">No activity yet.</p>
+            )}
+            {audit.data?.map((row) => (
+              <div
+                key={row.id}
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border/60 px-5 py-3 last:border-0"
+              >
+                <span className="rounded-sm bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-widest">
+                  {row.action}
+                </span>
+                <span className="text-sm font-medium">{row.market_question || row.market_id}</span>
+                <span className="ml-auto num text-xs text-muted-foreground">
+                  {row.actor_email ?? "unknown"} · {new Date(row.created_at).toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "admins" && (
+          <div className="mt-6 max-w-2xl rounded-lg border border-border bg-card p-6">
+            <h2 className="text-lg font-semibold">Admins</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                addAdmin.mutate(newAdmin);
+              }}
+              className="mt-4 flex gap-2"
+            >
+              <input
+                type="email"
+                required
+                value={newAdmin}
+                onChange={(e) => setNewAdmin(e.target.value)}
+                placeholder="teammate@example.com"
+                className="flex-1 rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={addAdmin.isPending}
+                className="rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
+              >
+                Grant admin
+              </button>
+            </form>
+            <p className="mt-2 text-xs text-muted-foreground">
+              The person must already have a KELMARKET account.
+            </p>
+            <div className="mt-5 space-y-2">
+              {admins.data?.map((a) => (
+                <div
+                  key={a.userId}
+                  className="flex items-center gap-3 rounded-md border border-border px-4 py-2.5"
+                >
+                  <span className="text-sm">{a.email}</span>
+                  {a.isSelf && (
+                    <span className="rounded-sm bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                      you
+                    </span>
+                  )}
+                  {!a.isSelf && (
+                    <button
+                      onClick={() => dropAdmin.mutate(a.userId)}
+                      className="ml-auto rounded-md border border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Revoke
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className={`mt-8 gap-8 lg:grid-cols-[1fr_1.4fr] ${tab === "markets" ? "grid" : "hidden"}`}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -201,6 +326,16 @@ function AdminPage() {
                 </option>
               ))}
             </select>
+
+            <label className="mt-4 block text-[11px] uppercase tracking-widest text-muted-foreground">
+              Tags (comma separated)
+            </label>
+            <input
+              value={draft.tags.join(", ")}
+              onChange={(e) => setDraft({ ...draft, tags: parseTags(e.target.value) })}
+              placeholder="election, fed, ai"
+              className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+            />
 
             <label className="mt-4 block text-[11px] uppercase tracking-widest text-muted-foreground">
               Resolution rules
@@ -295,6 +430,13 @@ function AdminPage() {
                   <button onClick={() => edit(m)} className="rounded-md border border-border px-3 py-1.5 hover:bg-secondary">
                     Edit
                   </button>
+                  <Link
+                    to="/preview/$marketId"
+                    params={{ marketId: m.id }}
+                    className="rounded-md border border-border px-3 py-1.5 hover:bg-secondary"
+                  >
+                    Preview
+                  </Link>
                   <button
                     onClick={() =>
                       publish.mutate({

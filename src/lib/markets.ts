@@ -13,6 +13,7 @@ export type Market = {
   history: number[];
   status: "draft" | "published";
   resolution: "YES" | "NO" | null;
+  tags: string[];
 };
 
 export const CATEGORIES = [
@@ -62,6 +63,7 @@ export type MarketRow = {
   history: unknown;
   status: string;
   resolution: string | null;
+  tags?: string[] | null;
 };
 
 export function fromRow(row: MarketRow): Market {
@@ -78,5 +80,17 @@ export function fromRow(row: MarketRow): Market {
     history: Array.isArray(row.history) ? (row.history as number[]).map(Number) : [],
     status: row.status === "published" ? "published" : "draft",
     resolution: row.resolution === "YES" || row.resolution === "NO" ? row.resolution : null,
+    tags: Array.isArray(row.tags) ? row.tags.filter(Boolean).map(String) : [],
   };
+}
+
+export function parseTags(input: string): string[] {
+  return Array.from(
+    new Set(
+      input
+        .split(",")
+        .map((t) => t.trim().toLowerCase().replace(/\s+/g, "-"))
+        .filter(Boolean),
+    ),
+  ).slice(0, 8);
 }

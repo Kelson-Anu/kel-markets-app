@@ -1,5 +1,14 @@
 import { queryOptions } from "@tanstack/react-query";
-import { listPublicMarkets, getPublicMarket, listAllMarkets, getAdminStatus } from "./markets.functions";
+import {
+  listPublicMarkets,
+  getPublicMarket,
+  listAllMarkets,
+  getAdminStatus,
+  getAdminMarket,
+  listAuditLog,
+  listAdmins,
+  listNotifications,
+} from "./markets.functions";
 
 export const marketsQuery = queryOptions({
   queryKey: ["markets", "public"],
@@ -20,4 +29,25 @@ export const adminMarketsQuery = queryOptions({
 export const adminStatusQuery = queryOptions({
   queryKey: ["admin", "status"],
   queryFn: () => getAdminStatus(),
+});
+
+export const adminMarketQuery = (id: string) =>
+  queryOptions({
+    queryKey: ["markets", "admin", id],
+    queryFn: () => getAdminMarket({ data: { id } }),
+  });
+
+export const auditLogQuery = queryOptions({
+  queryKey: ["admin", "audit"],
+  queryFn: () => listAuditLog(),
+});
+
+export const adminsQuery = queryOptions({
+  queryKey: ["admin", "admins"],
+  queryFn: () => listAdmins(),
+});
+
+export const notificationsQuery = queryOptions({
+  queryKey: ["notifications"],
+  queryFn: () => listNotifications(),
 });

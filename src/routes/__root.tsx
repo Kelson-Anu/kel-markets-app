@@ -78,10 +78,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "KELMARKETS" },
+      { title: "KELMARKET" },
       { name: "description", content: "Trade the odds on real-world events." },
-      { name: "author", content: "KELMARKETS" },
-      { property: "og:title", content: "KELMARKETS" },
+      { name: "author", content: "KELMARKET" },
+      { property: "og:title", content: "KELMARKET" },
       { property: "og:description", content: "Trade the odds on real-world events." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

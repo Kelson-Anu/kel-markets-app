@@ -6,9 +6,9 @@ import { MarketCard } from "@/components/MarketCard";
 import { CATEGORIES, usd } from "@/lib/markets";
 import { marketsQuery } from "@/lib/market-queries";
 
-const title = "KELMARKETS — Trade the odds on real-world events";
+const title = "KELMARKET — Trade the odds on real-world events";
 const description =
-  "KELMARKETS is a prediction market where you trade YES and NO shares on politics, crypto, sports and tech outcomes. Live odds, deep liquidity, instant settlement.";
+  "KELMARKET is a prediction market where you trade YES and NO shares on politics, crypto, sports and tech outcomes. Live odds, deep liquidity, instant settlement.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,17 +26,24 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [category, setCategory] = useState<string>("All");
   const [query, setQuery] = useState("");
+  const [tag, setTag] = useState<string | null>(null);
 
   const { data: all } = useSuspenseQuery(marketsQuery);
+
+  const tags = useMemo(
+    () => Array.from(new Set(all.flatMap((m) => m.tags))).sort().slice(0, 14),
+    [all],
+  );
 
   const markets = useMemo(
     () =>
       all.filter(
         (m) =>
           (category === "All" || m.category === category) &&
+          (!tag || m.tags.includes(tag)) &&
           m.question.toLowerCase().includes(query.toLowerCase()),
       ),
-    [all, category, query],
+    [all, category, query, tag],
   );
 
   const totalVolume = all.reduce((s, m) => s + m.volume, 0);
@@ -96,6 +103,27 @@ function Index() {
               className="ml-auto w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary sm:w-64"
             />
           </div>
+
+          {tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+                Tags
+              </span>
+              {tags.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTag(tag === t ? null : t)}
+                  className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                    tag === t
+                      ? "border-primary text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  #{t}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {markets.map((m) => (
