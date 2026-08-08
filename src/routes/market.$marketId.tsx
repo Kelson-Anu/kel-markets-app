@@ -1,14 +1,16 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Sparkline } from "@/components/Sparkline";
-import { cents, getMarket, usd, type Outcome } from "@/lib/markets";
+import { cents, usd, type Outcome } from "@/lib/markets";
+import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
 
 export const Route = createFileRoute("/market/$marketId")({
-  loader: ({ params }) => {
-    const market = getMarket(params.marketId);
+  loader: async ({ context, params }) => {
+    const market = await context.queryClient.ensureQueryData(marketQuery(params.marketId));
     if (!market) throw notFound();
     return { market };
   },
@@ -33,7 +35,9 @@ export const Route = createFileRoute("/market/$marketId")({
 });
 
 function MarketPage() {
-  const { market } = Route.useLoaderData();
+  const { marketId } = Route.useParams();
+  const { data } = useSuspenseQuery(marketQuery(marketId));
+  const market = data ?? Route.useLoaderData().market;
   const { trade, balance, positions } = usePortfolio();
   const [outcome, setOutcome] = useState<Outcome>("YES");
   const [amount, setAmount] = useState(25);
@@ -97,6 +101,18 @@ function MarketPage() {
                 </div>
               ))}
             </div>
+
+            {market.resolution && (
+              <div
+                className="mt-6 rounded-lg border p-4 text-sm font-semibold"
+                style={{
+                  borderColor: market.resolution === "YES" ? "var(--yes)" : "var(--no)",
+                  color: market.resolution === "YES" ? "var(--yes)" : "var(--no)",
+                }}
+              >
+                Resolved {market.resolution}
+              </div>
+            )}
 
             <div className="mt-8">
               <h2 className="text-lg font-semibold">Resolution rules</h2>
@@ -168,10 +184,11 @@ function MarketPage() {
             </dl>
 
             <button
+              disabled={Boolean(market.resolution)}
               onClick={submit}
-              className="mt-5 w-full rounded-md bg-primary py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+              className="mt-5 w-full rounded-md bg-primary py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Buy {outcome}
+              {market.resolution ? "Market resolved" : `Buy ${outcome}`}
             </button>
 
             {held.length > 0 && (

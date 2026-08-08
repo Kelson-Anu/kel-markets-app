@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { SiteHeader } from "@/components/SiteHeader";
-import { cents, getMarket } from "@/lib/markets";
+import { cents } from "@/lib/markets";
+import { marketsQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
 
 const title = "Your portfolio — KELMARKETS";
@@ -16,11 +18,14 @@ export const Route = createFileRoute("/portfolio")({
       { property: "og:description", content: description },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(marketsQuery),
   component: PortfolioPage,
 });
 
 function PortfolioPage() {
   const { positions, balance, ready, close, reset } = usePortfolio();
+  const { data: markets } = useSuspenseQuery(marketsQuery);
+  const getMarket = (id: string) => markets.find((m) => m.id === id);
 
   const rows = positions.map((p) => {
     const market = getMarket(p.marketId);

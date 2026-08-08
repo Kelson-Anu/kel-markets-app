@@ -29,6 +29,13 @@ export function SiteHeader() {
           >
             Portfolio
           </Link>
+          <Link
+            to="/admin"
+            className="rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            activeProps={{ className: "text-foreground bg-secondary" }}
+          >
+            Admin
+          </Link>
         </nav>
         <div className="hidden items-center gap-2 rounded-md border border-border bg-surface-raised px-3 py-1.5 sm:flex">
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Cash</span>
