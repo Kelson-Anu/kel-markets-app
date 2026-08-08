@@ -11,6 +11,8 @@ export type Market = {
   liquidity: number;
   closes: string;
   history: number[];
+  status: "draft" | "published";
+  resolution: "YES" | "NO" | null;
 };
 
 export const CATEGORIES = [
@@ -23,7 +25,9 @@ export const CATEGORIES = [
   "Economy",
 ] as const;
 
-function walk(start: number, n = 28, drift = 0): number[] {
+export const MARKET_CATEGORIES = CATEGORIES.filter((c) => c !== "All");
+
+export function walk(start: number, n = 28, drift = 0): number[] {
   const out: number[] = [];
   let v = start;
   let seed = Math.round(start * 10000);
