@@ -430,6 +430,13 @@ function AdminPage() {
                   <button onClick={() => edit(m)} className="rounded-md border border-border px-3 py-1.5 hover:bg-secondary">
                     Edit
                   </button>
+                  <Link
+                    to="/preview/$marketId"
+                    params={{ marketId: m.id }}
+                    className="rounded-md border border-border px-3 py-1.5 hover:bg-secondary"
+                  >
+                    Preview
+                  </Link>
                   <button
                     onClick={() =>
                       publish.mutate({
