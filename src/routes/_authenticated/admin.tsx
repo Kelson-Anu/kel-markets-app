@@ -58,26 +58,32 @@ function AdminPage() {
     qc.invalidateQueries({ queryKey: ["markets"] });
   };
 
-  const mut = <T,>(fn: (v: T) => Promise<unknown>, ok: string) =>
-    useMutation({
-      mutationFn: fn,
-      onSuccess: () => {
-        toast.success(ok);
-        refresh();
-      },
-      onError: (e: Error) => toast.error(e.message),
-    });
+  const onError = (e: Error) => toast.error(e.message);
+  const onDone = (msg: string) => () => {
+    toast.success(msg);
+    refresh();
+  };
 
-  const save = mut((d: Draft) => saveMarket({ data: d }), "Market saved");
-  const publish = mut(
-    (v: { id: string; status: "draft" | "published" }) => setMarketStatus({ data: v }),
-    "Status updated",
-  );
-  const resolve = mut(
-    (v: { id: string; resolution: "YES" | "NO" | null }) => resolveMarket({ data: v }),
-    "Resolution updated",
-  );
-  const remove = mut((id: string) => deleteMarket({ data: { id } }), "Market deleted");
+  const save = useMutation({
+    mutationFn: (d: Draft) => saveMarket({ data: d }),
+    onSuccess: onDone("Market saved"),
+    onError,
+  });
+  const publish = useMutation({
+    mutationFn: (v: { id: string; status: "draft" | "published" }) => setMarketStatus({ data: v }),
+    onSuccess: onDone("Status updated"),
+    onError,
+  });
+  const resolve = useMutation({
+    mutationFn: (v: { id: string; resolution: "YES" | "NO" | null }) => resolveMarket({ data: v }),
+    onSuccess: onDone("Resolution updated"),
+    onError,
+  });
+  const remove = useMutation({
+    mutationFn: (id: string) => deleteMarket({ data: { id } }),
+    onSuccess: onDone("Market deleted"),
+    onError,
+  });
   const claim = useMutation({
     mutationFn: () => claimAdmin(),
     onSuccess: () => {
