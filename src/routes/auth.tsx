@@ -5,9 +5,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
-const title = "Admin sign in — KELMARKETS";
+const title = "Admin sign in — KELMARKET";
 const description =
-  "Sign in to the KELMARKETS admin console to create, publish and resolve prediction markets.";
+  "Sign in to the KELMARKET admin console to create, publish and resolve prediction markets.";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -80,7 +80,7 @@ function AuthPage() {
       <main className="mx-auto max-w-md px-5 py-16">
         <h1 className="text-3xl font-bold">Admin access</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in to manage KELMARKETS markets.
+          Sign in to manage KELMARKET markets.
         </p>
 
         <form onSubmit={submit} className="mt-8 space-y-4 rounded-lg border border-border bg-card p-6">

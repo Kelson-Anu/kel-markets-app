@@ -18,10 +18,10 @@ export const Route = createFileRoute("/market/$marketId")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Market unavailable — KELMARKETS" }, { name: "robots", content: "noindex" }],
+        meta: [{ title: "Market unavailable — KELMARKET" }, { name: "robots", content: "noindex" }],
       };
     }
-    const t = `${loaderData.market.question} — KELMARKETS`;
+    const t = `${loaderData.market.question} — KELMARKET`;
     const d = loaderData.market.description;
     return {
       meta: [
@@ -82,7 +82,7 @@ function MarketPage() {
             <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">{market.question}</h1>
             {market.tags.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {market.tags.map((t) => (
+                {market.tags.map((t: string) => (
                   <span
                     key={t}
                     className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted-foreground"
