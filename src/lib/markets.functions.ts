@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fromRow, type MarketRow } from "./markets";
 import { COLUMNS, publicClient, assertAdmin, slugify } from "./market-helpers";
