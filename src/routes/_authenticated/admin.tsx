@@ -1,15 +1,22 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { MARKET_CATEGORIES, cents, type Market } from "@/lib/markets";
-import { adminMarketsQuery, adminStatusQuery } from "@/lib/market-queries";
+import { MARKET_CATEGORIES, cents, parseTags, type Market } from "@/lib/markets";
+import {
+  adminMarketsQuery,
+  adminStatusQuery,
+  adminsQuery,
+  auditLogQuery,
+} from "@/lib/market-queries";
 import {
   claimAdmin,
   deleteMarket,
+  grantAdmin,
   resolveMarket,
+  revokeAdmin,
   saveMarket,
   setMarketStatus,
 } from "@/lib/markets.functions";
@@ -17,10 +24,10 @@ import {
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Market admin — KELMARKETS" },
-      { name: "description", content: "Create, publish and resolve KELMARKETS prediction markets." },
-      { property: "og:title", content: "Market admin — KELMARKETS" },
-      { property: "og:description", content: "Create, publish and resolve KELMARKETS markets." },
+      { title: "Market admin — KELMARKET" },
+      { name: "description", content: "Create, publish and resolve KELMARKET prediction markets." },
+      { property: "og:title", content: "Market admin — KELMARKET" },
+      { property: "og:description", content: "Create, publish and resolve KELMARKET markets." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -35,6 +42,7 @@ type Draft = {
   yesPrice: number;
   closes: string;
   status: "draft" | "published";
+  tags: string[];
 };
 
 const emptyDraft: Draft = {
@@ -44,6 +52,7 @@ const emptyDraft: Draft = {
   yesPrice: 0.5,
   closes: "",
   status: "draft",
+  tags: [],
 };
 
 function AdminPage() {
@@ -53,6 +62,10 @@ function AdminPage() {
   const isAdmin = status.data?.isAdmin ?? false;
   const markets = useQuery({ ...adminMarketsQuery, enabled: isAdmin });
   const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [tab, setTab] = useState<"markets" | "activity" | "admins">("markets");
+  const [newAdmin, setNewAdmin] = useState("");
+  const audit = useQuery({ ...auditLogQuery, enabled: isAdmin && tab === "activity" });
+  const admins = useQuery({ ...adminsQuery, enabled: isAdmin && tab === "admins" });
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["markets"] });
@@ -92,6 +105,23 @@ function AdminPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+  const addAdmin = useMutation({
+    mutationFn: (email: string) => grantAdmin({ data: { email } }),
+    onSuccess: () => {
+      toast.success("Admin access granted");
+      setNewAdmin("");
+      qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError,
+  });
+  const dropAdmin = useMutation({
+    mutationFn: (userId: string) => revokeAdmin({ data: { userId } }),
+    onSuccess: () => {
+      toast.success("Admin access revoked");
+      qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError,
+  });
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -109,6 +139,7 @@ function AdminPage() {
       yesPrice: m.yesPrice,
       closes: m.closes,
       status: m.status,
+      tags: m.tags,
     });
 
   if (status.isLoading) {
