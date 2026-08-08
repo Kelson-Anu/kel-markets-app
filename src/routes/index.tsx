@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MarketCard } from "@/components/MarketCard";
-import { CATEGORIES, MARKETS, usd } from "@/lib/markets";
+import { CATEGORIES, usd } from "@/lib/markets";
+import { marketsQuery } from "@/lib/market-queries";
 
 const title = "KELMARKETS — Trade the odds on real-world events";
 const description =
@@ -17,6 +19,7 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: description },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(marketsQuery),
   component: Index,
 });
 
@@ -24,17 +27,19 @@ function Index() {
   const [category, setCategory] = useState<string>("All");
   const [query, setQuery] = useState("");
 
+  const { data: all } = useSuspenseQuery(marketsQuery);
+
   const markets = useMemo(
     () =>
-      MARKETS.filter(
+      all.filter(
         (m) =>
           (category === "All" || m.category === category) &&
           m.question.toLowerCase().includes(query.toLowerCase()),
       ),
-    [category, query],
+    [all, category, query],
   );
 
-  const totalVolume = MARKETS.reduce((s, m) => s + m.volume, 0);
+  const totalVolume = all.reduce((s, m) => s + m.volume, 0);
 
   return (
     <div className="min-h-screen">
@@ -52,7 +57,7 @@ function Index() {
           </p>
           <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-6">
             {[
-              ["Open markets", String(MARKETS.length)],
+              ["Open markets", String(all.length)],
               ["Total volume", usd(totalVolume)],
               ["Starting balance", "$1,000"],
             ].map(([label, value]) => (

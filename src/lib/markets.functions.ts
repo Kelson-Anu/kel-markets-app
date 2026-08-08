@@ -146,8 +146,10 @@ export const resolveMarket = createServerFn({ method: "POST" })
   .inputValidator((data: { id: string; resolution: "YES" | "NO" | null }) => data)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const update: Record<string, unknown> = { resolution: data.resolution };
-    if (data.resolution) update["yes_price"] = data.resolution === "YES" ? 0.99 : 0.01;
+    const update = {
+      resolution: data.resolution,
+      ...(data.resolution ? { yes_price: data.resolution === "YES" ? 0.99 : 0.01 } : {}),
+    };
     const { error } = await context.supabase.from("markets").update(update).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
