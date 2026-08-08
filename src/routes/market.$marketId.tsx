@@ -7,6 +7,7 @@ import { Sparkline } from "@/components/Sparkline";
 import { cents, usd, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
+import { recordTrade } from "@/lib/markets.functions";
 
 export const Route = createFileRoute("/market/$marketId")({
   loader: async ({ context, params }) => {
@@ -50,6 +51,16 @@ function MarketPage() {
   const submit = () => {
     if (trade(market.id, outcome, price, amount)) {
       toast.success(`Bought ${shares.toFixed(1)} ${outcome} shares at ${cents(price)}`);
+      void recordTrade({
+        data: {
+          marketId: market.id,
+          question: market.question,
+          outcome,
+          shares,
+          price,
+          cost: amount,
+        },
+      }).catch(() => {});
     } else {
       toast.error("Not enough cash for this order.");
     }
@@ -69,6 +80,18 @@ function MarketPage() {
               {market.category}
             </span>
             <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">{market.question}</h1>
+            {market.tags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {market.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted-foreground"
+                  >
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="mt-8 rounded-lg border border-border bg-card p-6">
               <div className="flex items-end justify-between">
