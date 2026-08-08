@@ -197,7 +197,101 @@ function AdminPage() {
           </button>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.4fr]">
+        <div className="mt-6 flex gap-1.5">
+          {(["markets", "activity", "admins"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`rounded-full border px-3.5 py-1.5 text-sm capitalize transition-colors ${
+                tab === t
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t === "activity" ? "Activity log" : t}
+            </button>
+          ))}
+        </div>
+
+        {tab === "activity" && (
+          <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card">
+            {audit.isLoading && <p className="p-6 text-sm text-muted-foreground">Loading…</p>}
+            {audit.data?.length === 0 && (
+              <p className="p-10 text-center text-sm text-muted-foreground">No activity yet.</p>
+            )}
+            {audit.data?.map((row) => (
+              <div
+                key={row.id}
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border/60 px-5 py-3 last:border-0"
+              >
+                <span className="rounded-sm bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-widest">
+                  {row.action}
+                </span>
+                <span className="text-sm font-medium">{row.market_question || row.market_id}</span>
+                <span className="ml-auto num text-xs text-muted-foreground">
+                  {row.actor_email ?? "unknown"} · {new Date(row.created_at).toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "admins" && (
+          <div className="mt-6 max-w-2xl rounded-lg border border-border bg-card p-6">
+            <h2 className="text-lg font-semibold">Admins</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                addAdmin.mutate(newAdmin);
+              }}
+              className="mt-4 flex gap-2"
+            >
+              <input
+                type="email"
+                required
+                value={newAdmin}
+                onChange={(e) => setNewAdmin(e.target.value)}
+                placeholder="teammate@example.com"
+                className="flex-1 rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={addAdmin.isPending}
+                className="rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
+              >
+                Grant admin
+              </button>
+            </form>
+            <p className="mt-2 text-xs text-muted-foreground">
+              The person must already have a KELMARKET account.
+            </p>
+            <div className="mt-5 space-y-2">
+              {admins.data?.map((a) => (
+                <div
+                  key={a.userId}
+                  className="flex items-center gap-3 rounded-md border border-border px-4 py-2.5"
+                >
+                  <span className="text-sm">{a.email}</span>
+                  {a.isSelf && (
+                    <span className="rounded-sm bg-secondary px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                      you
+                    </span>
+                  )}
+                  {!a.isSelf && (
+                    <button
+                      onClick={() => dropAdmin.mutate(a.userId)}
+                      className="ml-auto rounded-md border border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Revoke
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className={`mt-8 gap-8 lg:grid-cols-[1fr_1.4fr] ${tab === "markets" ? "grid" : "hidden"}`}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
