@@ -430,7 +430,8 @@ function AdminPage() {
                   <div>
                     <p className="font-semibold leading-snug">{m.question}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {m.category} · {cents(m.yesPrice)} · {m.closes || "no close date"}
+                      {m.category} · {priceLabel(m.yesPrice, m.priceDisplay)} ·{" "}
+                      {m.yesLabel}/{m.noLabel} · {m.closes || "no close date"}
                     </p>
                   </div>
                   <span
