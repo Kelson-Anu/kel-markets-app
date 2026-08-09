@@ -4,7 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Sparkline } from "@/components/Sparkline";
-import { cents, usd, type Outcome } from "@/lib/markets";
+import { cents, priceLabel, usd, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
 import { recordTrade } from "@/lib/markets.functions";
@@ -47,10 +47,11 @@ function MarketPage() {
   const shares = amount / price;
   const held = positions.filter((p) => p.marketId === market.id);
   const up = market.change24h >= 0;
+  const labelFor = (o: Outcome) => (o === "YES" ? market.yesLabel : market.noLabel);
 
   const submit = () => {
     if (trade(market.id, outcome, price, amount)) {
-      toast.success(`Bought ${shares.toFixed(1)} ${outcome} shares at ${cents(price)}`);
+      toast.success(`Bought ${shares.toFixed(1)} ${labelFor(outcome)} shares at ${cents(price)}`);
       void recordTrade({
         data: {
           marketId: market.id,
@@ -97,9 +98,11 @@ function MarketPage() {
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                    Yes price
+                    {market.yesLabel} price
                   </p>
-                  <p className="num mt-1 text-5xl font-bold">{cents(market.yesPrice)}</p>
+                  <p className="num mt-1 text-5xl font-bold">
+                    {priceLabel(market.yesPrice, market.priceDisplay)}
+                  </p>
                 </div>
                 <p
                   className="num text-sm font-medium"
@@ -133,7 +136,7 @@ function MarketPage() {
                   color: market.resolution === "YES" ? "var(--yes)" : "var(--no)",
                 }}
               >
-                Resolved {market.resolution}
+                Resolved {market.resolution === "YES" ? market.yesLabel : market.noLabel}
               </div>
             )}
 
@@ -163,7 +166,11 @@ function MarketPage() {
                       color: active ? color : "var(--muted-foreground)",
                     }}
                   >
-                    {o} {cents(o === "YES" ? market.yesPrice : 1 - market.yesPrice)}
+                    {labelFor(o)}{" "}
+                    {priceLabel(
+                      o === "YES" ? market.yesPrice : 1 - market.yesPrice,
+                      market.priceDisplay,
+                    )}
                   </button>
                 );
               })}
@@ -211,7 +218,7 @@ function MarketPage() {
               onClick={submit}
               className="mt-5 w-full rounded-md bg-primary py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {market.resolution ? "Market resolved" : `Buy ${outcome}`}
+              {market.resolution ? "Market resolved" : `Buy ${labelFor(outcome)}`}
             </button>
 
             {held.length > 0 && (
@@ -221,7 +228,7 @@ function MarketPage() {
                 </p>
                 {held.map((p) => (
                   <p key={p.id} className="num mt-2 text-sm">
-                    {p.shares.toFixed(2)} {p.outcome} @ {cents(p.avgPrice)}
+                    {p.shares.toFixed(2)} {labelFor(p.outcome)} @ {cents(p.avgPrice)}
                   </p>
                 ))}
               </div>

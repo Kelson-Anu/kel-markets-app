@@ -27,6 +27,7 @@ function Index() {
   const [category, setCategory] = useState<string>("All");
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
+  const [catOpen, setCatOpen] = useState(true);
 
   const { data: all } = useSuspenseQuery(marketsQuery);
 
@@ -78,63 +79,83 @@ function Index() {
           </dl>
         </section>
 
-        <section className="py-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex flex-wrap gap-1.5">
-              {CATEGORIES.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className={`rounded-full border px-3.5 py-1.5 text-sm transition-colors ${
-                    category === c
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+        <section className="grid gap-8 py-8 lg:grid-cols-[220px_1fr]">
+          <aside className="h-fit lg:sticky lg:top-24">
+            <button
+              type="button"
+              aria-expanded={catOpen}
+              onClick={() => setCatOpen((o) => !o)}
+              className="flex w-full items-center justify-between rounded-md border border-border bg-card px-3.5 py-2.5 text-sm font-medium"
+            >
+              <span>
+                <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Category
+                </span>
+                <span className="ml-2">{category}</span>
+              </span>
+              <span className={`transition-transform ${catOpen ? "rotate-180" : ""}`}>▾</span>
+            </button>
+
+            {catOpen && (
+              <div className="mt-2 overflow-hidden rounded-md border border-border bg-card">
+                {CATEGORIES.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCategory(c)}
+                    className={`block w-full px-3.5 py-2 text-left text-sm transition-colors ${
+                      category === c
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {tags.length > 0 && (
+              <div className="mt-6">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Tags</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {tags.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTag(tag === t ? null : t)}
+                      className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                        tag === t
+                          ? "border-primary text-primary"
+                          : "border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      #{t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </aside>
+
+          <div>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search markets"
               aria-label="Search markets"
-              className="ml-auto w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary sm:w-64"
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary sm:max-w-xs"
             />
-          </div>
 
-          {tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-                Tags
-              </span>
-              {tags.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTag(tag === t ? null : t)}
-                  className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                    tag === t
-                      ? "border-primary text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  #{t}
-                </button>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {markets.map((m) => (
+                <MarketCard key={m.id} market={m} />
               ))}
             </div>
-          )}
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {markets.map((m) => (
-              <MarketCard key={m.id} market={m} />
-            ))}
+            {markets.length === 0 && (
+              <p className="py-16 text-center text-sm text-muted-foreground">
+                No markets match that search.
+              </p>
+            )}
           </div>
-          {markets.length === 0 && (
-            <p className="py-16 text-center text-sm text-muted-foreground">
-              No markets match that search.
-            </p>
-          )}
         </section>
       </main>
     </div>

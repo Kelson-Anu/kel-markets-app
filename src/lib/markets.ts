@@ -1,5 +1,7 @@
 export type Outcome = "YES" | "NO";
 
+export type PriceDisplay = "cents" | "percent" | "odds";
+
 export type Market = {
   id: string;
   question: string;
@@ -14,6 +16,9 @@ export type Market = {
   status: "draft" | "published";
   resolution: "YES" | "NO" | null;
   tags: string[];
+  yesLabel: string;
+  noLabel: string;
+  priceDisplay: PriceDisplay;
 };
 
 export const CATEGORIES = [
@@ -50,6 +55,19 @@ export const usd = (n: number) =>
       : `$${n.toFixed(2)}`;
 
 export const cents = (p: number) => `${Math.round(p * 100)}¢`;
+
+export const PRICE_DISPLAYS: { value: PriceDisplay; label: string; example: string }[] = [
+  { value: "cents", label: "Cents", example: "62¢" },
+  { value: "percent", label: "Percent chance", example: "62%" },
+  { value: "odds", label: "Decimal odds", example: "1.61x" },
+];
+
+export function priceLabel(p: number, display: PriceDisplay = "cents") {
+  if (display === "percent") return `${Math.round(p * 100)}%`;
+  if (display === "odds") return `${(1 / Math.max(0.01, p)).toFixed(2)}x`;
+  return cents(p);
+}
+
 export type MarketRow = {
   id: string;
   question: string;
@@ -64,6 +82,9 @@ export type MarketRow = {
   status: string;
   resolution: string | null;
   tags?: string[] | null;
+  yes_label?: string | null;
+  no_label?: string | null;
+  price_display?: string | null;
 };
 
 export function fromRow(row: MarketRow): Market {
@@ -81,6 +102,12 @@ export function fromRow(row: MarketRow): Market {
     status: row.status === "published" ? "published" : "draft",
     resolution: row.resolution === "YES" || row.resolution === "NO" ? row.resolution : null,
     tags: Array.isArray(row.tags) ? row.tags.filter(Boolean).map(String) : [],
+    yesLabel: row.yes_label?.trim() || "Yes",
+    noLabel: row.no_label?.trim() || "No",
+    priceDisplay:
+      row.price_display === "percent" || row.price_display === "odds"
+        ? row.price_display
+        : "cents",
   };
 }
 

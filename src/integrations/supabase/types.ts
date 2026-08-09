@@ -58,12 +58,15 @@ export type Database = {
           history: Json
           id: string
           liquidity: number
+          no_label: string
+          price_display: string
           question: string
           resolution: string | null
           status: string
           tags: string[]
           updated_at: string
           volume: number
+          yes_label: string
           yes_price: number
         }
         Insert: {
@@ -76,12 +79,15 @@ export type Database = {
           history?: Json
           id: string
           liquidity?: number
+          no_label?: string
+          price_display?: string
           question: string
           resolution?: string | null
           status?: string
           tags?: string[]
           updated_at?: string
           volume?: number
+          yes_label?: string
           yes_price?: number
         }
         Update: {
@@ -94,12 +100,15 @@ export type Database = {
           history?: Json
           id?: string
           liquidity?: number
+          no_label?: string
+          price_display?: string
           question?: string
           resolution?: string | null
           status?: string
           tags?: string[]
           updated_at?: string
           volume?: number
+          yes_label?: string
           yes_price?: number
         }
         Relationships: []

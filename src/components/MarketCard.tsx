@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkline } from "./Sparkline";
-import { cents, usd, type Market } from "@/lib/markets";
+import { priceLabel, type Market } from "@/lib/markets";
 
 export function MarketCard({ market }: { market: Market }) {
   const up = market.change24h >= 0;
@@ -14,9 +14,7 @@ export function MarketCard({ market }: { market: Market }) {
         <span className="rounded-sm bg-secondary px-2 py-0.5 text-[11px] uppercase tracking-widest text-muted-foreground">
           {market.category}
         </span>
-        <span className="num ml-auto text-xs text-muted-foreground">
-          {usd(market.volume)} vol
-        </span>
+        <span className="num ml-auto text-xs text-muted-foreground">{market.closes}</span>
       </div>
 
       <h3 className="text-base font-semibold leading-snug">{market.question}</h3>
@@ -36,7 +34,9 @@ export function MarketCard({ market }: { market: Market }) {
 
       <div className="mt-auto flex items-end gap-4">
         <div>
-          <div className="num text-3xl font-bold leading-none">{cents(market.yesPrice)}</div>
+          <div className="num text-3xl font-bold leading-none">
+            {priceLabel(market.yesPrice, market.priceDisplay)}
+          </div>
           <div
             className="num mt-1 text-xs font-medium"
             style={{ color: up ? "var(--yes)" : "var(--no)" }}
@@ -50,10 +50,10 @@ export function MarketCard({ market }: { market: Market }) {
 
       <div className="flex gap-2">
         <span className="flex-1 rounded-md border border-yes/40 bg-yes/10 py-2 text-center text-sm font-semibold text-yes">
-          Yes {cents(market.yesPrice)}
+          {market.yesLabel} {priceLabel(market.yesPrice, market.priceDisplay)}
         </span>
         <span className="flex-1 rounded-md border border-no/40 bg-no/10 py-2 text-center text-sm font-semibold text-no">
-          No {cents(1 - market.yesPrice)}
+          {market.noLabel} {priceLabel(1 - market.yesPrice, market.priceDisplay)}
         </span>
       </div>
     </Link>
