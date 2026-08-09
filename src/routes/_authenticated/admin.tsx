@@ -391,6 +391,62 @@ function AdminPage() {
               </div>
             </div>
 
+            <div className="mt-6 rounded-md border border-border p-4">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                Betting options display
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] text-muted-foreground">
+                    Positive option label
+                  </label>
+                  <input
+                    required
+                    maxLength={24}
+                    value={draft.yesLabel}
+                    onChange={(e) => setDraft({ ...draft, yesLabel: e.target.value })}
+                    placeholder="Yes"
+                    className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-muted-foreground">
+                    Negative option label
+                  </label>
+                  <input
+                    required
+                    maxLength={24}
+                    value={draft.noLabel}
+                    onChange={(e) => setDraft({ ...draft, noLabel: e.target.value })}
+                    placeholder="No"
+                    className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+              <label className="mt-3 block text-[11px] text-muted-foreground">Price format</label>
+              <select
+                value={draft.priceDisplay}
+                onChange={(e) =>
+                  setDraft({ ...draft, priceDisplay: e.target.value as PriceDisplay })
+                }
+                className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              >
+                {PRICE_DISPLAYS.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label} ({d.example})
+                  </option>
+                ))}
+              </select>
+              <div className="mt-3 flex gap-2">
+                <span className="flex-1 rounded-md border border-yes/40 bg-yes/10 py-2 text-center text-sm font-semibold text-yes">
+                  {draft.yesLabel || "Yes"} {priceLabel(draft.yesPrice, draft.priceDisplay)}
+                </span>
+                <span className="flex-1 rounded-md border border-no/40 bg-no/10 py-2 text-center text-sm font-semibold text-no">
+                  {draft.noLabel || "No"} {priceLabel(1 - draft.yesPrice, draft.priceDisplay)}
+                </span>
+              </div>
+            </div>
+
             <label className="mt-4 flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
