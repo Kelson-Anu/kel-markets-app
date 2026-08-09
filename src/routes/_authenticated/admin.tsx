@@ -4,7 +4,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { MARKET_CATEGORIES, cents, parseTags, type Market } from "@/lib/markets";
+import {
+  MARKET_CATEGORIES,
+  PRICE_DISPLAYS,
+  parseTags,
+  priceLabel,
+  type Market,
+  type PriceDisplay,
+} from "@/lib/markets";
 import {
   adminMarketsQuery,
   adminStatusQuery,
@@ -43,6 +50,9 @@ type Draft = {
   closes: string;
   status: "draft" | "published";
   tags: string[];
+  yesLabel: string;
+  noLabel: string;
+  priceDisplay: PriceDisplay;
 };
 
 const emptyDraft: Draft = {
@@ -53,6 +63,9 @@ const emptyDraft: Draft = {
   closes: "",
   status: "draft",
   tags: [],
+  yesLabel: "Yes",
+  noLabel: "No",
+  priceDisplay: "cents",
 };
 
 function AdminPage() {
@@ -140,6 +153,9 @@ function AdminPage() {
       closes: m.closes,
       status: m.status,
       tags: m.tags,
+      yesLabel: m.yesLabel,
+      noLabel: m.noLabel,
+      priceDisplay: m.priceDisplay,
     });
 
   if (status.isLoading) {
@@ -340,6 +356,7 @@ function AdminPage() {
             <label className="mt-4 block text-[11px] uppercase tracking-widest text-muted-foreground">
               Resolution rules
             </label>
+
             <textarea
               rows={4}
               maxLength={2000}

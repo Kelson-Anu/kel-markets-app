@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkline } from "./Sparkline";
-import { cents, priceLabel, type Market } from "@/lib/markets";
+import { priceLabel, type Market } from "@/lib/markets";
 
 export function MarketCard({ market }: { market: Market }) {
   const up = market.change24h >= 0;
