@@ -198,6 +198,9 @@ export type MarketInput = {
   closes: string;
   status: "draft" | "published";
   tags: string[];
+  yesLabel: string;
+  noLabel: string;
+  priceDisplay: "cents" | "percent" | "odds";
 };
 
 export const saveMarket = createServerFn({ method: "POST" })
@@ -208,6 +211,12 @@ export const saveMarket = createServerFn({ method: "POST" })
     if (data.description.length > 2000) throw new Error("Description is too long");
     if (!(data.yesPrice > 0.01 && data.yesPrice < 0.99)) {
       throw new Error("Starting price must be between 2¢ and 98¢");
+    }
+    if (!data.yesLabel.trim() || !data.noLabel.trim()) {
+      throw new Error("Both option labels are required");
+    }
+    if (data.yesLabel.length > 24 || data.noLabel.length > 24) {
+      throw new Error("Option labels must be 24 characters or less");
     }
     return data;
   })
@@ -227,6 +236,9 @@ export const saveMarket = createServerFn({ method: "POST" })
           closes: data.closes.trim(),
           status: data.status,
           tags: data.tags,
+          yes_label: data.yesLabel.trim(),
+          no_label: data.noLabel.trim(),
+          price_display: data.priceDisplay,
         })
         .eq("id", data.id);
       if (error) throw new Error(error.message);
@@ -254,6 +266,9 @@ export const saveMarket = createServerFn({ method: "POST" })
       history: walk(data.yesPrice),
       status: data.status,
       tags: data.tags,
+      yes_label: data.yesLabel.trim(),
+      no_label: data.noLabel.trim(),
+      price_display: data.priceDisplay,
       created_by: context.userId,
     });
     if (error) throw new Error(error.message);
