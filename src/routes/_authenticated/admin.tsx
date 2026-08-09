@@ -356,7 +356,6 @@ function AdminPage() {
             <label className="mt-4 block text-[11px] uppercase tracking-widest text-muted-foreground">
               Resolution rules
             </label>
-
             <textarea
               rows={4}
               maxLength={2000}
