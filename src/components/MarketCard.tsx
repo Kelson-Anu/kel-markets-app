@@ -1,8 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { SentimentBar } from "./SentimentBar";
+import { Sparkline } from "./Sparkline";
+import { hasChartData, useMarketView } from "@/lib/view-preference";
 import { priceLabel, type Market } from "@/lib/markets";
 
 export function MarketCard({ market }: { market: Market }) {
+  const { view } = useMarketView();
+  const showChart = view === "chart" && hasChartData(market.history);
   return (
     <Link
       to="/market/$marketId"
@@ -32,15 +36,26 @@ export function MarketCard({ market }: { market: Market }) {
       )}
 
       <div className="mt-auto">
-        <div className="num text-3xl font-bold leading-none">
-          {priceLabel(market.yesPrice, market.priceDisplay)}
+        <div className="flex items-end gap-4">
+          <div className="num text-3xl font-bold leading-none">
+            {priceLabel(market.yesPrice, market.priceDisplay)}
+          </div>
+          {showChart && (
+            <Sparkline
+              data={market.history}
+              up={market.change24h >= 0}
+              className="h-10 flex-1"
+            />
+          )}
         </div>
-        <SentimentBar
-          yesPrice={market.yesPrice}
-          yesLabel={market.yesLabel}
-          noLabel={market.noLabel}
-          className="mt-3"
-        />
+        {!showChart && (
+          <SentimentBar
+            yesPrice={market.yesPrice}
+            yesLabel={market.yesLabel}
+            noLabel={market.noLabel}
+            className="mt-3"
+          />
+        )}
       </div>
 
       <div className="flex gap-2">

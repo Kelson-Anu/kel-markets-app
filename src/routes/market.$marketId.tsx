@@ -4,6 +4,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SentimentBar } from "@/components/SentimentBar";
+import { Sparkline } from "@/components/Sparkline";
+import { hasChartData, useMarketView } from "@/lib/view-preference";
 import { cents, priceLabel, usd, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
@@ -48,6 +50,8 @@ function MarketPage() {
   const shares = amount / price;
   const held = positions.filter((p) => p.marketId === market.id);
   const up = market.change24h >= 0;
+  const { view } = useMarketView();
+  const showChart = view === "chart" && hasChartData(market.history);
   const labelFor = (o: Outcome) => (o === "YES" ? market.yesLabel : market.noLabel);
 
   const submit = () => {
@@ -120,13 +124,17 @@ function MarketPage() {
                   {market.change24h.toFixed(1)} pts · 24h
                 </p>
               </div>
-              <SentimentBar
-                yesPrice={market.yesPrice}
-                yesLabel={market.yesLabel}
-                noLabel={market.noLabel}
-                size="lg"
-                className="mt-6"
-              />
+              {showChart ? (
+                <Sparkline data={market.history} up={up} className="mt-6 h-40 w-full" />
+              ) : (
+                <SentimentBar
+                  yesPrice={market.yesPrice}
+                  yesLabel={market.yesLabel}
+                  noLabel={market.noLabel}
+                  size="lg"
+                  className="mt-6"
+                />
+              )}
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-4">
