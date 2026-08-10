@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkline } from "./Sparkline";
+import { SentimentBar } from "./SentimentBar";
 import { priceLabel, type Market } from "@/lib/markets";
 
 export function MarketCard({ market }: { market: Market }) {
@@ -32,20 +32,16 @@ export function MarketCard({ market }: { market: Market }) {
         </div>
       )}
 
-      <div className="mt-auto flex items-end gap-4">
-        <div>
-          <div className="num text-3xl font-bold leading-none">
-            {priceLabel(market.yesPrice, market.priceDisplay)}
-          </div>
-          <div
-            className="num mt-1 text-xs font-medium"
-            style={{ color: up ? "var(--yes)" : "var(--no)" }}
-          >
-            {up ? "+" : ""}
-            {market.change24h.toFixed(1)} pts
-          </div>
+      <div className="mt-auto">
+        <div className="num text-3xl font-bold leading-none">
+          {priceLabel(market.yesPrice, market.priceDisplay)}
         </div>
-        <Sparkline data={market.history} up={up} className="h-10 flex-1" />
+        <SentimentBar
+          yesPrice={market.yesPrice}
+          yesLabel={market.yesLabel}
+          noLabel={market.noLabel}
+          className="mt-3"
+        />
       </div>
 
       <div className="flex gap-2">
