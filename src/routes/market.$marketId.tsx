@@ -52,16 +52,23 @@ function MarketPage() {
   const submit = () => {
     if (trade(market.id, outcome, price, amount)) {
       toast.success(`Bought ${shares.toFixed(1)} ${labelFor(outcome)} shares at ${cents(price)}`);
-      void recordTrade({
-        data: {
-          marketId: market.id,
-          question: market.question,
-          outcome,
-          shares,
-          price,
-          cost: amount,
-        },
-      }).catch(() => {});
+      // Trade notifications are only stored for signed-in users.
+      void supabase.auth
+        .getSession()
+        .then(({ data: s }) => {
+          if (!s.session) return;
+          return recordTrade({
+            data: {
+              marketId: market.id,
+              question: market.question,
+              outcome,
+              shares,
+              price,
+              cost: amount,
+            },
+          });
+        })
+        .catch(() => {});
     } else {
       toast.error("Not enough cash for this order.");
     }
