@@ -8,6 +8,7 @@ import { cents, priceLabel, usd, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
 import { recordTrade } from "@/lib/markets.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/market/$marketId")({
   loader: async ({ context, params }) => {
@@ -52,16 +53,23 @@ function MarketPage() {
   const submit = () => {
     if (trade(market.id, outcome, price, amount)) {
       toast.success(`Bought ${shares.toFixed(1)} ${labelFor(outcome)} shares at ${cents(price)}`);
-      void recordTrade({
-        data: {
-          marketId: market.id,
-          question: market.question,
-          outcome,
-          shares,
-          price,
-          cost: amount,
-        },
-      }).catch(() => {});
+      // Trade notifications are only stored for signed-in users.
+      void supabase.auth
+        .getSession()
+        .then(({ data: s }) => {
+          if (!s.session) return;
+          return recordTrade({
+            data: {
+              marketId: market.id,
+              question: market.question,
+              outcome,
+              shares,
+              price,
+              cost: amount,
+            },
+          });
+        })
+        .catch(() => {});
     } else {
       toast.error("Not enough cash for this order.");
     }
