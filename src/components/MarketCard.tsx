@@ -3,7 +3,6 @@ import { SentimentBar } from "./SentimentBar";
 import { priceLabel, type Market } from "@/lib/markets";
 
 export function MarketCard({ market }: { market: Market }) {
-  const up = market.change24h >= 0;
   return (
     <Link
       to="/market/$marketId"
