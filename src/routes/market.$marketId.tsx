@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Sparkline } from "@/components/Sparkline";
+import { SentimentBar } from "@/components/SentimentBar";
 import { cents, priceLabel, usd, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
@@ -120,13 +120,18 @@ function MarketPage() {
                   {market.change24h.toFixed(1)} pts · 24h
                 </p>
               </div>
-              <Sparkline data={market.history} up={up} className="mt-6 h-40 w-full" />
+              <SentimentBar
+                yesPrice={market.yesPrice}
+                yesLabel={market.yesLabel}
+                noLabel={market.noLabel}
+                size="lg"
+                className="mt-6"
+              />
             </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-4">
+            <div className="mt-6 grid grid-cols-2 gap-4">
               {[
                 ["Volume", usd(market.volume)],
-                ["Liquidity", usd(market.liquidity)],
                 ["Closes", market.closes],
               ].map(([l, v]) => (
                 <div key={l} className="rounded-lg border border-border bg-card p-4">
