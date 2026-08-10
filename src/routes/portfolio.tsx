@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { SiteHeader } from "@/components/SiteHeader";
 import { cents } from "@/lib/markets";
@@ -43,12 +44,26 @@ function PortfolioPage() {
       <main className="mx-auto max-w-6xl px-5 py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="text-3xl font-bold">Portfolio</h1>
-          <button
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => toast("Deposits open once payment methods are connected.")}
+              className="rounded-md bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90"
+            >
+              Deposit
+            </button>
+            <button
+              onClick={() => toast("Withdrawals open once payment methods are connected.")}
+              className="rounded-md border border-border px-4 py-1.5 text-xs font-semibold hover:border-primary hover:text-primary"
+            >
+              Withdraw
+            </button>
+            <button
             onClick={reset}
             className="rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
           >
             Reset account
-          </button>
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">

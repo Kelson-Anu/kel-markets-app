@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MarketCard } from "@/components/MarketCard";
-import { Sparkline } from "@/components/Sparkline";
+import { SentimentBar } from "@/components/SentimentBar";
 import { adminMarketQuery } from "@/lib/market-queries";
 import { cents, usd } from "@/lib/markets";
 
@@ -81,34 +81,28 @@ function PreviewPage() {
                       ))}
                     </div>
                   )}
-                  <div className="mt-6 flex items-end gap-6">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                        Yes price
-                      </p>
-                      <p className="num mt-1 text-4xl font-bold">{cents(market.yesPrice)}</p>
-                    </div>
-                    <Sparkline
-                      data={market.history}
-                      up={market.change24h >= 0}
-                      className="h-14 flex-1"
+                  <div className="mt-6">
+                    <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                      Yes price
+                    </p>
+                    <p className="num mt-1 text-4xl font-bold">{cents(market.yesPrice)}</p>
+                    <SentimentBar
+                      yesPrice={market.yesPrice}
+                      yesLabel={market.yesLabel}
+                      noLabel={market.noLabel}
+                      size="lg"
+                      className="mt-4 max-w-md"
                     />
                   </div>
                   <p className="mt-6 whitespace-pre-wrap text-sm text-muted-foreground">
                     {market.description || "No resolution rules written yet."}
                   </p>
-                  <dl className="mt-6 grid grid-cols-3 gap-4 border-t border-border pt-4 text-sm">
+                  <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-border pt-4 text-sm">
                     <div>
                       <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">
                         Volume
                       </dt>
                       <dd className="num mt-1 font-semibold">{usd(market.volume)}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                        Liquidity
-                      </dt>
-                      <dd className="num mt-1 font-semibold">{usd(market.liquidity)}</dd>
                     </div>
                     <div>
                       <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">
