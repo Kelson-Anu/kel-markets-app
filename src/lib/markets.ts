@@ -19,6 +19,7 @@ export type Market = {
   yesLabel: string;
   noLabel: string;
   priceDisplay: PriceDisplay;
+  updatedAt: string | null;
 };
 
 export const CATEGORIES = [
@@ -85,6 +86,7 @@ export type MarketRow = {
   yes_label?: string | null;
   no_label?: string | null;
   price_display?: string | null;
+  updated_at?: string | null;
 };
 
 export function fromRow(row: MarketRow): Market {
@@ -108,6 +110,7 @@ export function fromRow(row: MarketRow): Market {
       row.price_display === "percent" || row.price_display === "odds"
         ? row.price_display
         : "cents",
+    updatedAt: row.updated_at ?? null,
   };
 }
 
