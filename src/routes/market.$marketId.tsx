@@ -8,6 +8,7 @@ import { cents, priceLabel, usd, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
 import { recordTrade } from "@/lib/markets.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/market/$marketId")({
   loader: async ({ context, params }) => {
