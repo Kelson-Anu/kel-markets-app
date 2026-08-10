@@ -131,6 +131,7 @@ function MarketPage() {
                   yesPrice={market.yesPrice}
                   yesLabel={market.yesLabel}
                   noLabel={market.noLabel}
+            updatedAt={market.updatedAt}
                   size="lg"
                   className="mt-6"
                 />

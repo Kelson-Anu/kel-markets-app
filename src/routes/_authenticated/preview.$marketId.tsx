@@ -90,6 +90,7 @@ function PreviewPage() {
                       yesPrice={market.yesPrice}
                       yesLabel={market.yesLabel}
                       noLabel={market.noLabel}
+            updatedAt={market.updatedAt}
                       size="lg"
                       className="mt-4 max-w-md"
                     />

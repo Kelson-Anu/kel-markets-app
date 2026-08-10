@@ -53,6 +53,7 @@ export function MarketCard({ market }: { market: Market }) {
             yesPrice={market.yesPrice}
             yesLabel={market.yesLabel}
             noLabel={market.noLabel}
+            updatedAt={market.updatedAt}
             className="mt-3"
           />
         )}
