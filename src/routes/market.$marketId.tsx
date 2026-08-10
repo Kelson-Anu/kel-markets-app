@@ -50,6 +50,8 @@ function MarketPage() {
   const shares = amount / price;
   const held = positions.filter((p) => p.marketId === market.id);
   const up = market.change24h >= 0;
+  const { view } = useMarketView();
+  const showChart = view === "chart" && hasChartData(market.history);
   const labelFor = (o: Outcome) => (o === "YES" ? market.yesLabel : market.noLabel);
 
   const submit = () => {
