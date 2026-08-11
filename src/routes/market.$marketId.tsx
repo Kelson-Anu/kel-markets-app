@@ -189,10 +189,14 @@ function MarketPage() {
                     }}
                   >
                     {labelFor(o)}{" "}
-                    {priceLabel(
-                      o === "YES" ? market.yesPrice : 1 - market.yesPrice,
-                      market.priceDisplay,
-                    )}
+                    {Math.round((o === "YES" ? market.yesPrice : 1 - market.yesPrice) * 100)}%
+                    <span className="num block text-[11px] font-normal opacity-80">
+                      pays{" "}
+                      {(
+                        1 / Math.max(0.01, o === "YES" ? market.yesPrice : 1 - market.yesPrice)
+                      ).toFixed(2)}
+                      x
+                    </span>
                   </button>
                 );
               })}

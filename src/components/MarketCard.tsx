@@ -61,10 +61,16 @@ export function MarketCard({ market }: { market: Market }) {
 
       <div className="flex gap-2">
         <span className="flex-1 rounded-md border border-yes/40 bg-yes/10 py-2 text-center text-sm font-semibold text-yes">
-          {market.yesLabel} {priceLabel(market.yesPrice, market.priceDisplay)}
+          {market.yesLabel} {Math.round(market.yesPrice * 100)}%
+          <span className="num block text-[11px] font-normal opacity-80">
+            pays {(1 / Math.max(0.01, market.yesPrice)).toFixed(2)}x
+          </span>
         </span>
         <span className="flex-1 rounded-md border border-no/40 bg-no/10 py-2 text-center text-sm font-semibold text-no">
-          {market.noLabel} {priceLabel(1 - market.yesPrice, market.priceDisplay)}
+          {market.noLabel} {Math.round((1 - market.yesPrice) * 100)}%
+          <span className="num block text-[11px] font-normal opacity-80">
+            pays {(1 / Math.max(0.01, 1 - market.yesPrice)).toFixed(2)}x
+          </span>
         </span>
       </div>
     </Link>
