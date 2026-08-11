@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SentimentBar } from "@/components/SentimentBar";
 import { Sparkline } from "@/components/Sparkline";
 import { hasChartData, useMarketView } from "@/lib/view-preference";
-import { cents, priceLabel, usd, type Outcome } from "@/lib/markets";
+import { cents, usd, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
 import { recordTrade } from "@/lib/markets.functions";
@@ -56,7 +56,9 @@ function MarketPage() {
 
   const submit = () => {
     if (trade(market.id, outcome, price, amount)) {
-      toast.success(`Bought ${shares.toFixed(1)} ${labelFor(outcome)} shares at ${cents(price)}`);
+      toast.success(
+        `Staked $${amount.toFixed(2)} on ${labelFor(outcome)} — pays ${(1 / Math.max(0.01, price)).toFixed(2)}x if it wins`,
+      );
       // Trade notifications are only stored for signed-in users.
       void supabase.auth
         .getSession()
@@ -110,10 +112,13 @@ function MarketPage() {
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                    {market.yesLabel} price
+                    Pool backing {market.yesLabel}
                   </p>
                   <p className="num mt-1 text-5xl font-bold">
-                    {priceLabel(market.yesPrice, market.priceDisplay)}
+                    {Math.round(market.yesPrice * 100)}%
+                  </p>
+                  <p className="num mt-1 text-xs text-muted-foreground">
+                    pays {(1 / Math.max(0.01, market.yesPrice)).toFixed(2)}x your stake
                   </p>
                 </div>
                 <p
@@ -189,10 +194,14 @@ function MarketPage() {
                     }}
                   >
                     {labelFor(o)}{" "}
-                    {priceLabel(
-                      o === "YES" ? market.yesPrice : 1 - market.yesPrice,
-                      market.priceDisplay,
-                    )}
+                    {Math.round((o === "YES" ? market.yesPrice : 1 - market.yesPrice) * 100)}%
+                    <span className="num block text-[11px] font-normal opacity-80">
+                      pays{" "}
+                      {(
+                        1 / Math.max(0.01, o === "YES" ? market.yesPrice : 1 - market.yesPrice)
+                      ).toFixed(2)}
+                      x
+                    </span>
                   </button>
                 );
               })}
