@@ -55,8 +55,10 @@ export function SentimentBar({
   const explanation = (
     <div className="max-w-[240px] space-y-1.5 text-xs leading-relaxed">
       <p>
-        Percentages come straight from the live market price: {yesLabel} trades at {yes}¢ on the
-        dollar, so the market prices it at {yes}% likely. {noLabel} is the remaining {no}%.
+        {yes}% of the money in the pool is backing {yesLabel}, {no}% is backing {noLabel}. The
+        losing side's stake is shared out to the winners, so {yesLabel} currently pays{" "}
+        {(1 / Math.max(0.01, clamped)).toFixed(2)}x and {noLabel} pays{" "}
+        {(1 / Math.max(0.01, 1 - clamped)).toFixed(2)}x your stake.
       </p>
       <p className="text-muted-foreground">
         {updated ? `Prices last updated ${updated}.` : "Last update time unavailable."}
@@ -66,11 +68,11 @@ export function SentimentBar({
   );
 
   const rows: Array<[string, string]> = [
-    [`${yesLabel} share price`, `$${clamped.toFixed(2)} (${(clamped * 100).toFixed(1)}¢)`],
-    [`${noLabel} share price`, `$${(1 - clamped).toFixed(2)} (${((1 - clamped) * 100).toFixed(1)}¢)`],
-    [`Implied ${yesLabel} chance`, `${clamped.toFixed(2)} × 100 = ${yes}%`],
-    [`Implied ${noLabel} chance`, `100 − ${yes} = ${no}%`],
-    ["Last price update", updated ?? "unavailable"],
+    [`Pool backing ${yesLabel}`, `${(clamped * 100).toFixed(1)}%`],
+    [`Pool backing ${noLabel}`, `${((1 - clamped) * 100).toFixed(1)}%`],
+    [`${yesLabel} payout`, `${(1 / Math.max(0.01, clamped)).toFixed(2)}x your stake`],
+    [`${noLabel} payout`, `${(1 / Math.max(0.01, 1 - clamped)).toFixed(2)}x your stake`],
+    ["Last update", updated ?? "unavailable"],
   ];
 
   return (
@@ -128,8 +130,9 @@ export function SentimentBar({
           <DialogHeader>
             <DialogTitle>How this split is calculated</DialogTitle>
             <DialogDescription>
-              Prices are probabilities. A share pays $1 if it wins, so its price is what the market
-              thinks the chance is.
+              Everyone's stake goes into one pool. The split shows how much of that pool sits on
+              each side; when the market settles, the losing side's money is shared out to the
+              winners in proportion to what they staked.
             </DialogDescription>
           </DialogHeader>
 
@@ -148,8 +151,8 @@ export function SentimentBar({
           </dl>
 
           <p className="text-xs leading-relaxed text-muted-foreground">
-            The two sides always add up to 100%. These are market-implied odds from trading activity,
-            not a poll of participants.
+            The two sides always add up to 100%. The smaller side pays out more per dollar, because
+            fewer winners share the same losing pool.
           </p>
         </DialogContent>
       </Dialog>
