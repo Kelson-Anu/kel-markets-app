@@ -1,11 +1,18 @@
 import { Info } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function relativeTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -16,38 +23,6 @@ function relativeTime(iso: string) {
   const hrs = Math.round(mins / 60);
   if (hrs < 24) return `${hrs} hr ago`;
   return `${Math.round(hrs / 24)} d ago`;
-}
-
-/** Tooltip that opens on hover/focus (desktop) and on tap (touch), with tap-away dismiss. */
-function useTapTooltip() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLSpanElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const dismiss = (e: Event) => {
-      const target = e.target as Node | null;
-      if (target && ref.current?.contains(target)) return;
-      setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("pointerdown", dismiss, true);
-    window.addEventListener("scroll", dismiss, true);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("pointerdown", dismiss, true);
-      window.removeEventListener("scroll", dismiss, true);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  const toggle = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpen((v) => !v);
-  };
-
-  return { open, setOpen, toggle, ref };
 }
 
 export function SentimentBar({
@@ -65,11 +40,17 @@ export function SentimentBar({
   size?: "sm" | "lg";
   updatedAt?: string | null;
 }) {
-  const yes = Math.min(100, Math.max(0, Math.round(yesPrice * 100)));
+  const clamped = Math.min(1, Math.max(0, yesPrice));
+  const yes = Math.round(clamped * 100);
   const no = 100 - yes;
   const updated = updatedAt ? relativeTime(updatedAt) : null;
-  const info = useTapTooltip();
-  const bar = useTapTooltip();
+  const [open, setOpen] = useState(false);
+
+  const openModal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpen(true);
+  };
 
   const explanation = (
     <div className="max-w-[240px] space-y-1.5 text-xs leading-relaxed">
@@ -80,9 +61,17 @@ export function SentimentBar({
       <p className="text-muted-foreground">
         {updated ? `Prices last updated ${updated}.` : "Last update time unavailable."}
       </p>
-      <p className="text-muted-foreground sm:hidden">Tap anywhere to dismiss.</p>
+      <p className="text-muted-foreground">Tap for the full breakdown.</p>
     </div>
   );
+
+  const rows: Array<[string, string]> = [
+    [`${yesLabel} share price`, `$${clamped.toFixed(2)} (${(clamped * 100).toFixed(1)}¢)`],
+    [`${noLabel} share price`, `$${(1 - clamped).toFixed(2)} (${((1 - clamped) * 100).toFixed(1)}¢)`],
+    [`Implied ${yesLabel} chance`, `${clamped.toFixed(2)} × 100 = ${yes}%`],
+    [`Implied ${noLabel} chance`, `100 − ${yes} = ${no}%`],
+    ["Last price update", updated ?? "unavailable"],
+  ];
 
   return (
     <div className={className}>
@@ -90,52 +79,80 @@ export function SentimentBar({
         <span className="num" style={{ color: "var(--yes)" }}>
           {yes}% {yesLabel}
         </span>
-        <span className="flex items-center gap-1.5" ref={info.ref}>
+        <span className="flex items-center gap-1.5">
           <span className="num" style={{ color: "var(--no)" }}>
             {no}% {noLabel}
           </span>
           <TooltipProvider delayDuration={150}>
-            <Tooltip open={info.open} onOpenChange={info.setOpen}>
-              <TooltipTrigger
-                asChild
-                onClick={info.toggle}
-              >
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <button
                   type="button"
+                  onClick={openModal}
                   aria-label="How these percentages are calculated"
-                  aria-expanded={info.open}
                   className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="top" align="end" onPointerDownOutside={() => info.setOpen(false)}>
+              <TooltipContent side="top" align="end">
                 {explanation}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </span>
       </div>
-      <span className="block" ref={bar.ref}>
-        <TooltipProvider delayDuration={150}>
-          <Tooltip open={bar.open} onOpenChange={bar.setOpen}>
-            <TooltipTrigger asChild onClick={bar.toggle}>
-              <button
-                type="button"
-                aria-expanded={bar.open}
-                aria-label={`${yes}% ${yesLabel}, ${no}% ${noLabel}. Show how this is calculated`}
-                className={`mt-1.5 flex w-full cursor-help overflow-hidden rounded-full bg-secondary ${size === "lg" ? "h-3" : "h-2"}`}
-              >
-                <span style={{ width: `${yes}%`, backgroundColor: "var(--yes)" }} />
-                <span style={{ width: `${no}%`, backgroundColor: "var(--no)" }} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" onPointerDownOutside={() => bar.setOpen(false)}>
-              {explanation}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </span>
+
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={openModal}
+              aria-label={`${yes}% ${yesLabel}, ${no}% ${noLabel}. Show the full calculation`}
+              className={`mt-1.5 flex w-full cursor-help overflow-hidden rounded-full bg-secondary ${size === "lg" ? "h-3" : "h-2"}`}
+            >
+              <span style={{ width: `${yes}%`, backgroundColor: "var(--yes)" }} />
+              <span style={{ width: `${no}%`, backgroundColor: "var(--no)" }} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">{explanation}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          className="max-w-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DialogHeader>
+            <DialogTitle>How this split is calculated</DialogTitle>
+            <DialogDescription>
+              Prices are probabilities. A share pays $1 if it wins, so its price is what the market
+              thinks the chance is.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex overflow-hidden rounded-full bg-secondary h-3">
+            <div style={{ width: `${yes}%`, backgroundColor: "var(--yes)" }} />
+            <div style={{ width: `${no}%`, backgroundColor: "var(--no)" }} />
+          </div>
+
+          <dl className="divide-y divide-border text-sm">
+            {rows.map(([label, value]) => (
+              <div key={label} className="flex items-center justify-between gap-4 py-2">
+                <dt className="text-muted-foreground">{label}</dt>
+                <dd className="num font-medium text-right">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            The two sides always add up to 100%. These are market-implied odds from trading activity,
+            not a poll of participants.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
