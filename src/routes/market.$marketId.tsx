@@ -110,10 +110,13 @@ function MarketPage() {
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                    {market.yesLabel} price
+                    Pool backing {market.yesLabel}
                   </p>
                   <p className="num mt-1 text-5xl font-bold">
-                    {priceLabel(market.yesPrice, market.priceDisplay)}
+                    {Math.round(market.yesPrice * 100)}%
+                  </p>
+                  <p className="num mt-1 text-xs text-muted-foreground">
+                    pays {(1 / Math.max(0.01, market.yesPrice)).toFixed(2)}x your stake
                   </p>
                 </div>
                 <p
