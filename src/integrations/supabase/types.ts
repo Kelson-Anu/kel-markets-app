@@ -58,7 +58,9 @@ export type Database = {
           history: Json
           id: string
           liquidity: number
+          no_bettors: number
           no_label: string
+          no_pool: number
           price_display: string
           question: string
           resolution: string | null
@@ -66,7 +68,9 @@ export type Database = {
           tags: string[]
           updated_at: string
           volume: number
+          yes_bettors: number
           yes_label: string
+          yes_pool: number
           yes_price: number
         }
         Insert: {
@@ -79,7 +83,9 @@ export type Database = {
           history?: Json
           id: string
           liquidity?: number
+          no_bettors?: number
           no_label?: string
+          no_pool?: number
           price_display?: string
           question: string
           resolution?: string | null
@@ -87,7 +93,9 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           volume?: number
+          yes_bettors?: number
           yes_label?: string
+          yes_pool?: number
           yes_price?: number
         }
         Update: {
@@ -100,7 +108,9 @@ export type Database = {
           history?: Json
           id?: string
           liquidity?: number
+          no_bettors?: number
           no_label?: string
+          no_pool?: number
           price_display?: string
           question?: string
           resolution?: string | null
@@ -108,7 +118,9 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           volume?: number
+          yes_bettors?: number
           yes_label?: string
+          yes_pool?: number
           yes_price?: number
         }
         Relationships: []
@@ -175,6 +187,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      place_bet: {
+        Args: { _amount: number; _market_id: string; _side: string }
+        Returns: {
+          no_bettors: number
+          no_pool: number
+          yes_bettors: number
+          yes_pool: number
+        }[]
       }
     }
     Enums: {
