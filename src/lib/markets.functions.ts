@@ -74,10 +74,27 @@ export const recordTrade = createServerFn({ method: "POST" })
     await notify({
       userId: context.userId,
       kind: "trade",
-      title: `Bought ${data.shares.toFixed(1)} ${data.outcome} · ${Math.round(data.price * 100)}¢`,
-      body: `${data.question} — $${data.cost.toFixed(2)} filled.`,
+      title: `Staked $${data.cost.toFixed(2)} on ${data.outcome}`,
+      body: `${data.question} — added to the ${data.outcome} pool.`,
       marketId: data.marketId,
     });
+    return { ok: true };
+  });
+
+/** Anyone (guest or signed in) can stake into a published market's pool. */
+export const placeBet = createServerFn({ method: "POST" })
+  .inputValidator((data: { marketId: string; side: "YES" | "NO"; amount: number }) => {
+    if (data.side !== "YES" && data.side !== "NO") throw new Error("Invalid side");
+    if (!(data.amount > 0) || data.amount > 1_000_000) throw new Error("Invalid amount");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { error } = await publicClient().rpc("place_bet", {
+      _market_id: data.marketId,
+      _side: data.side,
+      _amount: data.amount,
+    });
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 

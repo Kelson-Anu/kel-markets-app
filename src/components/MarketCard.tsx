@@ -2,11 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { SentimentBar } from "./SentimentBar";
 import { Sparkline } from "./Sparkline";
 import { hasChartData, useMarketView } from "@/lib/view-preference";
-import { priceLabel, type Market } from "@/lib/markets";
+import { poolSplit, payoutLabel, type Market } from "@/lib/markets";
 
 export function MarketCard({ market }: { market: Market }) {
   const { view } = useMarketView();
   const showChart = view === "chart" && hasChartData(market.history);
+  const split = poolSplit(market);
   return (
     <Link
       to="/market/$marketId"
@@ -38,7 +39,7 @@ export function MarketCard({ market }: { market: Market }) {
       <div className="mt-auto">
         <div className="flex items-end gap-4">
           <div className="num text-3xl font-bold leading-none">
-            {priceLabel(market.yesPrice, market.priceDisplay)}
+            {split.hasBets ? `${Math.round(split.yesPct)}%` : "0%"}
           </div>
           {showChart && (
             <Sparkline
@@ -50,7 +51,10 @@ export function MarketCard({ market }: { market: Market }) {
         </div>
         {!showChart && (
           <SentimentBar
-            yesPrice={market.yesPrice}
+            yesPool={market.yesPool}
+            noPool={market.noPool}
+            yesBettors={market.yesBettors}
+            noBettors={market.noBettors}
             yesLabel={market.yesLabel}
             noLabel={market.noLabel}
             updatedAt={market.updatedAt}
@@ -61,15 +65,15 @@ export function MarketCard({ market }: { market: Market }) {
 
       <div className="flex gap-2">
         <span className="flex-1 rounded-md border border-yes/40 bg-yes/10 py-2 text-center text-sm font-semibold text-yes">
-          {market.yesLabel} {Math.round(market.yesPrice * 100)}%
+          {market.yesLabel} {Math.round(split.yesPct)}%
           <span className="num block text-[11px] font-normal opacity-80">
-            pays {(1 / Math.max(0.01, market.yesPrice)).toFixed(2)}x
+            pays {payoutLabel(split.yesPayout)}
           </span>
         </span>
         <span className="flex-1 rounded-md border border-no/40 bg-no/10 py-2 text-center text-sm font-semibold text-no">
-          {market.noLabel} {Math.round((1 - market.yesPrice) * 100)}%
+          {market.noLabel} {Math.round(split.noPct)}%
           <span className="num block text-[11px] font-normal opacity-80">
-            pays {(1 / Math.max(0.01, 1 - market.yesPrice)).toFixed(2)}x
+            pays {payoutLabel(split.noPayout)}
           </span>
         </span>
       </div>

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 export const COLUMNS =
-  "id, question, category, description, yes_price, change_24h, volume, liquidity, closes, history, status, resolution, tags, yes_label, no_label, price_display, updated_at";
+  "id, question, category, description, yes_price, change_24h, volume, liquidity, closes, history, status, resolution, tags, yes_label, no_label, price_display, updated_at, yes_pool, no_pool, yes_bettors, no_bettors";
 
 export function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;

@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { useState } from "react";
+import { poolSplit, payoutLabel } from "@/lib/markets";
 import {
   Tooltip,
   TooltipContent,
@@ -26,23 +27,29 @@ function relativeTime(iso: string) {
 }
 
 export function SentimentBar({
-  yesPrice,
+  yesPool,
+  noPool,
+  yesBettors = 0,
+  noBettors = 0,
   yesLabel = "For",
   noLabel = "Against",
   className = "",
   size = "sm",
   updatedAt = null,
 }: {
-  yesPrice: number;
+  yesPool: number;
+  noPool: number;
+  yesBettors?: number;
+  noBettors?: number;
   yesLabel?: string;
   noLabel?: string;
   className?: string;
   size?: "sm" | "lg";
   updatedAt?: string | null;
 }) {
-  const clamped = Math.min(1, Math.max(0, yesPrice));
-  const yes = Math.round(clamped * 100);
-  const no = 100 - yes;
+  const split = poolSplit({ yesPool, noPool, yesBettors, noBettors });
+  const yes = Math.round(split.yesPct);
+  const no = split.hasBets ? 100 - yes : 0;
   const updated = updatedAt ? relativeTime(updatedAt) : null;
   const [open, setOpen] = useState(false);
 
@@ -54,24 +61,35 @@ export function SentimentBar({
 
   const explanation = (
     <div className="max-w-[240px] space-y-1.5 text-xs leading-relaxed">
-      <p>
-        {yes}% of the money in the pool is backing {yesLabel}, {no}% is backing {noLabel}. The
-        losing side's stake is shared out to the winners, so {yesLabel} currently pays{" "}
-        {(1 / Math.max(0.01, clamped)).toFixed(2)}x and {noLabel} pays{" "}
-        {(1 / Math.max(0.01, 1 - clamped)).toFixed(2)}x your stake.
-      </p>
+      {split.hasBets ? (
+        <p>
+          {yes}% of the money staked is on {yesLabel} ({split.yesBettors} bet
+          {split.yesBettors === 1 ? "" : "s"}), {no}% on {noLabel} ({split.noBettors} bet
+          {split.noBettors === 1 ? "" : "s"}). The losing side's stake is shared out to the
+          winners, so {yesLabel} pays {payoutLabel(split.yesPayout)} and {noLabel} pays{" "}
+          {payoutLabel(split.noPayout)} your stake.
+        </p>
+      ) : (
+        <p>
+          No bets yet — both sides sit at 0%. The split appears as soon as money is staked, and
+          the side with less money backing it pays out more.
+        </p>
+      )}
       <p className="text-muted-foreground">
-        {updated ? `Prices last updated ${updated}.` : "Last update time unavailable."}
+        {updated ? `Pool last updated ${updated}.` : "Last update time unavailable."}
       </p>
       <p className="text-muted-foreground">Tap for the full breakdown.</p>
     </div>
   );
 
   const rows: Array<[string, string]> = [
-    [`Pool backing ${yesLabel}`, `${(clamped * 100).toFixed(1)}%`],
-    [`Pool backing ${noLabel}`, `${((1 - clamped) * 100).toFixed(1)}%`],
-    [`${yesLabel} payout`, `${(1 / Math.max(0.01, clamped)).toFixed(2)}x your stake`],
-    [`${noLabel} payout`, `${(1 / Math.max(0.01, 1 - clamped)).toFixed(2)}x your stake`],
+    ["Total pool", `$${split.total.toFixed(2)}`],
+    [`${yesLabel} pool`, `$${split.yesPool.toFixed(2)} · ${split.yesBettors} bet${split.yesBettors === 1 ? "" : "s"}`],
+    [`${noLabel} pool`, `$${split.noPool.toFixed(2)} · ${split.noBettors} bet${split.noBettors === 1 ? "" : "s"}`],
+    [`${yesLabel} share`, `${split.yesPct.toFixed(1)}%`],
+    [`${noLabel} share`, `${split.noPct.toFixed(1)}%`],
+    [`${yesLabel} payout`, `${payoutLabel(split.yesPayout)} your stake`],
+    [`${noLabel} payout`, `${payoutLabel(split.noPayout)} your stake`],
     ["Last update", updated ?? "unavailable"],
   ];
 
@@ -130,9 +148,10 @@ export function SentimentBar({
           <DialogHeader>
             <DialogTitle>How this split is calculated</DialogTitle>
             <DialogDescription>
-              Everyone's stake goes into one pool. The split shows how much of that pool sits on
-              each side; when the market settles, the losing side's money is shared out to the
-              winners in proportion to what they staked.
+              Each side's percentage is the money staked on that side divided by the total pool,
+              so with no bets both sides show 0%. When the market settles, the losing side's money
+              is shared out to the winners in proportion to what they staked — the side with fewer
+              backers pays more.
             </DialogDescription>
           </DialogHeader>
 
@@ -151,8 +170,8 @@ export function SentimentBar({
           </dl>
 
           <p className="text-xs leading-relaxed text-muted-foreground">
-            The two sides always add up to 100%. The smaller side pays out more per dollar, because
-            fewer winners share the same losing pool.
+            Once bets exist the two sides add up to 100%. The smaller side pays out more per
+            dollar, because fewer winners share the same losing pool.
           </p>
         </DialogContent>
       </Dialog>
