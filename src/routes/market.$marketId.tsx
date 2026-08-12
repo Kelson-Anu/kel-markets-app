@@ -1,15 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SentimentBar } from "@/components/SentimentBar";
 import { Sparkline } from "@/components/Sparkline";
 import { hasChartData, useMarketView } from "@/lib/view-preference";
-import { cents, usd, type Outcome } from "@/lib/markets";
+import { cents, usd, poolSplit, payoutLabel, type Outcome } from "@/lib/markets";
 import { marketQuery } from "@/lib/market-queries";
 import { usePortfolio } from "@/lib/positions";
-import { recordTrade } from "@/lib/markets.functions";
+import { recordTrade, placeBet } from "@/lib/markets.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/market/$marketId")({
@@ -45,9 +45,16 @@ function MarketPage() {
   const { trade, balance, positions } = usePortfolio();
   const [outcome, setOutcome] = useState<Outcome>("YES");
   const [amount, setAmount] = useState(25);
+  const queryClient = useQueryClient();
 
-  const price = outcome === "YES" ? market.yesPrice : 1 - market.yesPrice;
-  const shares = amount / price;
+  const split = poolSplit(market);
+  // Price = this side's share of the pool once the new stake lands; 50/50 when the pool is empty.
+  const projectedTotal = split.total + amount;
+  const projectedSide =
+    (outcome === "YES" ? split.yesPool : split.noPool) + amount;
+  const price = projectedTotal > 0 ? projectedSide / projectedTotal : 0.5;
+  const projectedPayout = projectedSide > 0 ? projectedTotal / projectedSide : 1;
+  const shares = amount / Math.max(0.01, price);
   const held = positions.filter((p) => p.marketId === market.id);
   const up = market.change24h >= 0;
   const { view } = useMarketView();
@@ -57,8 +64,11 @@ function MarketPage() {
   const submit = () => {
     if (trade(market.id, outcome, price, amount)) {
       toast.success(
-        `Staked $${amount.toFixed(2)} on ${labelFor(outcome)} — pays ${(1 / Math.max(0.01, price)).toFixed(2)}x if it wins`,
+        `Staked $${amount.toFixed(2)} on ${labelFor(outcome)} — pays ${projectedPayout.toFixed(2)}x if it wins`,
       );
+      void placeBet({ data: { marketId: market.id, side: outcome, amount } })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["markets"] }))
+        .catch(() => {});
       // Trade notifications are only stored for signed-in users.
       void supabase.auth
         .getSession()
@@ -115,10 +125,12 @@ function MarketPage() {
                     Pool backing {market.yesLabel}
                   </p>
                   <p className="num mt-1 text-5xl font-bold">
-                    {Math.round(market.yesPrice * 100)}%
+                    {Math.round(split.yesPct)}%
                   </p>
                   <p className="num mt-1 text-xs text-muted-foreground">
-                    pays {(1 / Math.max(0.01, market.yesPrice)).toFixed(2)}x your stake
+                    {split.hasBets
+                      ? `pays ${payoutLabel(split.yesPayout)} your stake`
+                      : "no bets yet — be the first to stake"}
                   </p>
                 </div>
                 <p
@@ -133,7 +145,10 @@ function MarketPage() {
                 <Sparkline data={market.history} up={up} className="mt-6 h-40 w-full" />
               ) : (
                 <SentimentBar
-                  yesPrice={market.yesPrice}
+                  yesPool={market.yesPool}
+                  noPool={market.noPool}
+                  yesBettors={market.yesBettors}
+                  noBettors={market.noBettors}
                   yesLabel={market.yesLabel}
                   noLabel={market.noLabel}
             updatedAt={market.updatedAt}
@@ -182,6 +197,8 @@ function MarketPage() {
               {(["YES", "NO"] as Outcome[]).map((o) => {
                 const active = outcome === o;
                 const color = o === "YES" ? "var(--yes)" : "var(--no)";
+                const pct = o === "YES" ? split.yesPct : split.noPct;
+                const pay = o === "YES" ? split.yesPayout : split.noPayout;
                 return (
                   <button
                     key={o}
@@ -193,14 +210,9 @@ function MarketPage() {
                       color: active ? color : "var(--muted-foreground)",
                     }}
                   >
-                    {labelFor(o)}{" "}
-                    {Math.round((o === "YES" ? market.yesPrice : 1 - market.yesPrice) * 100)}%
+                    {labelFor(o)} {Math.round(pct)}%
                     <span className="num block text-[11px] font-normal opacity-80">
-                      pays{" "}
-                      {(
-                        1 / Math.max(0.01, o === "YES" ? market.yesPrice : 1 - market.yesPrice)
-                      ).toFixed(2)}
-                      x
+                      pays {payoutLabel(pay)}
                     </span>
                   </button>
                 );
@@ -231,12 +243,16 @@ function MarketPage() {
 
             <dl className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Shares</dt>
-                <dd className="num">{shares.toFixed(2)}</dd>
+                <dt className="text-muted-foreground">Your share of this side</dt>
+                <dd className="num">
+                  {projectedSide > 0 ? `${Math.round((amount / projectedSide) * 100)}%` : "—"}
+                </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Payout if correct</dt>
-                <dd className="num font-semibold text-primary">${shares.toFixed(2)}</dd>
+                <dd className="num font-semibold text-primary">
+                  ${(amount * projectedPayout).toFixed(2)} ({projectedPayout.toFixed(2)}x)
+                </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Cash available</dt>
