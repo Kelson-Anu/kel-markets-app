@@ -98,21 +98,6 @@ export const placeBet = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-const _unusedRecordTrade = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { marketId: string; question: string; outcome: "YES" | "NO"; shares: number; price: number; cost: number }) => data)
-  .handler(async ({ data, context }) => {
-    const { notify } = await import("./audit.server");
-    await notify({
-      userId: context.userId,
-      kind: "trade",
-      title: `Bought ${data.shares.toFixed(1)} ${data.outcome} · ${Math.round(data.price * 100)}¢`,
-      body: `${data.question} — $${data.cost.toFixed(2)} filled.`,
-      marketId: data.marketId,
-    });
-    return { ok: true };
-  });
-
 /** Admin management */
 export const listAdmins = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
