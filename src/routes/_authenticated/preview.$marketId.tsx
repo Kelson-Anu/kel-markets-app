@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { MarketCard } from "@/components/MarketCard";
 import { SentimentBar } from "@/components/SentimentBar";
 import { adminMarketQuery } from "@/lib/market-queries";
-import { cents, usd } from "@/lib/markets";
+import { poolSplit, usd } from "@/lib/markets";
 
 export const Route = createFileRoute("/_authenticated/preview/$marketId")({
   head: () => ({
@@ -83,11 +83,16 @@ function PreviewPage() {
                   )}
                   <div className="mt-6">
                     <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                      Yes price
+                      Pool backing {market.yesLabel}
                     </p>
-                    <p className="num mt-1 text-4xl font-bold">{cents(market.yesPrice)}</p>
+                    <p className="num mt-1 text-4xl font-bold">
+                      {Math.round(poolSplit(market).yesPct)}%
+                    </p>
                     <SentimentBar
-                      yesPrice={market.yesPrice}
+                      yesPool={market.yesPool}
+                      noPool={market.noPool}
+                      yesBettors={market.yesBettors}
+                      noBettors={market.noBettors}
                       yesLabel={market.yesLabel}
                       noLabel={market.noLabel}
             updatedAt={market.updatedAt}
