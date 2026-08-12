@@ -20,7 +20,39 @@ export type Market = {
   noLabel: string;
   priceDisplay: PriceDisplay;
   updatedAt: string | null;
+  yesPool: number;
+  noPool: number;
+  yesBettors: number;
+  noBettors: number;
 };
+
+/**
+ * Live split derived from actual money staked on each side.
+ * With no bets placed yet, both sides sit at 0%.
+ */
+export function poolSplit(m: Pick<Market, "yesPool" | "noPool" | "yesBettors" | "noBettors">) {
+  const yesPool = Math.max(0, m.yesPool);
+  const noPool = Math.max(0, m.noPool);
+  const total = yesPool + noPool;
+  const hasBets = total > 0;
+  const yesPct = hasBets ? (yesPool / total) * 100 : 0;
+  const noPct = hasBets ? (noPool / total) * 100 : 0;
+  return {
+    total,
+    hasBets,
+    yesPool,
+    noPool,
+    yesPct,
+    noPct,
+    yesBettors: m.yesBettors,
+    noBettors: m.noBettors,
+    // Winners share the whole pool: your stake back plus a slice of the losing side.
+    yesPayout: yesPool > 0 ? total / yesPool : null,
+    noPayout: noPool > 0 ? total / noPool : null,
+  };
+}
+
+export const payoutLabel = (x: number | null) => (x === null ? "—" : `${x.toFixed(2)}x`);
 
 export const CATEGORIES = [
   "All",
@@ -87,6 +119,10 @@ export type MarketRow = {
   no_label?: string | null;
   price_display?: string | null;
   updated_at?: string | null;
+  yes_pool?: number | string | null;
+  no_pool?: number | string | null;
+  yes_bettors?: number | null;
+  no_bettors?: number | null;
 };
 
 export function fromRow(row: MarketRow): Market {
@@ -111,6 +147,10 @@ export function fromRow(row: MarketRow): Market {
         ? row.price_display
         : "cents",
     updatedAt: row.updated_at ?? null,
+    yesPool: Number(row.yes_pool ?? 0),
+    noPool: Number(row.no_pool ?? 0),
+    yesBettors: Number(row.yes_bettors ?? 0),
+    noBettors: Number(row.no_bettors ?? 0),
   };
 }
 
