@@ -158,9 +158,10 @@ function MarketPage() {
               )}
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="mt-6 grid grid-cols-3 gap-4">
               {[
                 ["Volume", usd(market.volume)],
+                ["Liquidity", usd(split.total)],
                 ["Closes", market.closes],
               ].map(([l, v]) => (
                 <div key={l} className="rounded-lg border border-border bg-card p-4">

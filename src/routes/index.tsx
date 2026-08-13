@@ -48,6 +48,7 @@ function Index() {
   );
 
   const totalVolume = all.reduce((s, m) => s + m.volume, 0);
+  const totalLiquidity = all.reduce((s, m) => s + m.yesPool + m.noPool, 0);
 
   return (
     <div className="min-h-screen">
@@ -67,6 +68,7 @@ function Index() {
             {[
               ["Open markets", String(all.length)],
               ["Total volume", usd(totalVolume)],
+              ["Total liquidity", usd(totalLiquidity)],
               ["Starting balance", "$1,000"],
             ].map(([label, value]) => (
               <div key={label}>

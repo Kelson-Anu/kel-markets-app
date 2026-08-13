@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { SentimentBar } from "./SentimentBar";
 import { Sparkline } from "./Sparkline";
 import { hasChartData, useMarketView } from "@/lib/view-preference";
-import { poolSplit, payoutLabel, type Market } from "@/lib/markets";
+import { poolSplit, payoutLabel, usd, type Market } from "@/lib/markets";
 
 export function MarketCard({ market }: { market: Market }) {
   const { view } = useMarketView();
@@ -19,6 +19,13 @@ export function MarketCard({ market }: { market: Market }) {
           {market.category}
         </span>
         <span className="num ml-auto text-xs text-muted-foreground">{market.closes}</span>
+      </div>
+
+      <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
+        <span>Liquidity</span>
+        <span className="num rounded-sm border border-border px-1.5 py-0.5 text-xs normal-case tracking-normal text-foreground">
+          {usd(split.total)}
+        </span>
       </div>
 
       <h3 className="text-base font-semibold leading-snug">{market.question}</h3>
