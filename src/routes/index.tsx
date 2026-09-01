@@ -28,6 +28,7 @@ function Index() {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
   const [catOpen, setCatOpen] = useState(true);
+  const [sort, setSort] = useState<"default" | "liquidity-desc">("default");
 
   const { data: all } = useSuspenseQuery(marketsQuery);
 
@@ -36,16 +37,18 @@ function Index() {
     [all],
   );
 
-  const markets = useMemo(
-    () =>
-      all.filter(
-        (m) =>
-          (category === "All" || m.category === category) &&
-          (!tag || m.tags.includes(tag)) &&
-          m.question.toLowerCase().includes(query.toLowerCase()),
-      ),
-    [all, category, query, tag],
-  );
+  const markets = useMemo(() => {
+    const filtered = all.filter(
+      (m) =>
+        (category === "All" || m.category === category) &&
+        (!tag || m.tags.includes(tag)) &&
+        m.question.toLowerCase().includes(query.toLowerCase()),
+    );
+    if (sort === "liquidity-desc") {
+      filtered.sort((a, b) => b.yesPool + b.noPool - (a.yesPool + a.noPool));
+    }
+    return filtered;
+  }, [all, category, query, tag, sort]);
 
   const totalVolume = all.reduce((s, m) => s + m.volume, 0);
   const totalLiquidity = all.reduce((s, m) => s + m.yesPool + m.noPool, 0);
@@ -139,13 +142,27 @@ function Index() {
           </aside>
 
           <div>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search markets"
-              aria-label="Search markets"
-              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary sm:max-w-xs"
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search markets"
+                aria-label="Search markets"
+                className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary sm:max-w-xs"
+              />
+              <label htmlFor="sort-markets" className="sr-only">
+                Sort markets
+              </label>
+              <select
+                id="sort-markets"
+                value={sort}
+                onChange={(e) => setSort(e.target.value as typeof sort)}
+                className="w-full cursor-pointer rounded-md border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary sm:w-auto"
+              >
+                <option value="default">Sort: Default</option>
+                <option value="liquidity-desc">Sort: Liquidity (high to low)</option>
+              </select>
+            </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {markets.map((m) => (
