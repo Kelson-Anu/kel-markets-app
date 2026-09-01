@@ -3,6 +3,7 @@ import logo from "@/assets/kelmarkets-logo.png";
 import { usePortfolio } from "@/lib/positions";
 import { NotificationBell } from "./NotificationBell";
 import { MarketViewToggle } from "./MarketViewToggle";
+import { AccountMenu } from "./AccountMenu";
 
 export function SiteHeader() {
   const { balance, ready } = usePortfolio();
@@ -41,6 +42,7 @@ export function SiteHeader() {
           <NotificationBell />
         </nav>
         <MarketViewToggle />
+        <AccountMenu />
         <div className="hidden items-center gap-2 rounded-md border border-border bg-surface-raised px-3 py-1.5 sm:flex">
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Cash</span>
           <span className="num text-sm font-semibold text-primary">
