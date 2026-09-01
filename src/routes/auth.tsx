@@ -40,7 +40,7 @@ function AuthPage() {
   }, [navigate]);
 
   const redirectTo = () =>
-    typeof window === "undefined" ? undefined : `${window.location.origin}/verify`;
+    typeof window === "undefined" ? "" : `${window.location.origin}/verify`;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
