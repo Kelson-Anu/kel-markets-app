@@ -37,16 +37,18 @@ function Index() {
     [all],
   );
 
-  const markets = useMemo(
-    () =>
-      all.filter(
-        (m) =>
-          (category === "All" || m.category === category) &&
-          (!tag || m.tags.includes(tag)) &&
-          m.question.toLowerCase().includes(query.toLowerCase()),
-      ),
-    [all, category, query, tag],
-  );
+  const markets = useMemo(() => {
+    const filtered = all.filter(
+      (m) =>
+        (category === "All" || m.category === category) &&
+        (!tag || m.tags.includes(tag)) &&
+        m.question.toLowerCase().includes(query.toLowerCase()),
+    );
+    if (sort === "liquidity-desc") {
+      filtered.sort((a, b) => b.yesPool + b.noPool - (a.yesPool + a.noPool));
+    }
+    return filtered;
+  }, [all, category, query, tag, sort]);
 
   const totalVolume = all.reduce((s, m) => s + m.volume, 0);
   const totalLiquidity = all.reduce((s, m) => s + m.yesPool + m.noPool, 0);
