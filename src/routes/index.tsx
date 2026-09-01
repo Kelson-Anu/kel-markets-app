@@ -28,6 +28,7 @@ function Index() {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
   const [catOpen, setCatOpen] = useState(true);
+  const [sort, setSort] = useState<"default" | "liquidity-desc">("default");
 
   const { data: all } = useSuspenseQuery(marketsQuery);
 
