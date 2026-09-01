@@ -3,6 +3,7 @@ import logo from "@/assets/kelmarkets-logo.png";
 import { usePortfolio } from "@/lib/positions";
 import { NotificationBell } from "./NotificationBell";
 import { MarketViewToggle } from "./MarketViewToggle";
+import { AccountMenu } from "./AccountMenu";
 
 export function SiteHeader() {
   const { balance, ready } = usePortfolio();
