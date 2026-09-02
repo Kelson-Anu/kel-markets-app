@@ -173,3 +173,48 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
+
+/* Category icon animations */
+@keyframes cat-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes cat-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes cat-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+@keyframes cat-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.18); opacity: 0.8; }
+}
+@keyframes cat-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes cat-float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-2px) translateX(2px); }
+}
+@keyframes cat-tilt {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(-8deg); }
+}
+
+.cat-anim {
+  display: inline-flex;
+  animation-duration: 2.4s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.cat-anim-bounce { animation-name: cat-bounce; }
+.cat-anim-spin { animation-name: cat-spin; animation-duration: 6s; animation-timing-function: linear; }
+.cat-anim-wiggle { animation-name: cat-wiggle; animation-duration: 1.6s; }
+.cat-anim-pulse { animation-name: cat-pulse; }
+.cat-anim-blink { animation-name: cat-blink; animation-duration: 1.8s; }
+.cat-anim-float { animation-name: cat-float; }
+.cat-anim-tilt { animation-name: cat-tilt; animation-duration: 2s; }

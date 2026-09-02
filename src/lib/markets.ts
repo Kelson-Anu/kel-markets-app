@@ -62,6 +62,26 @@ export const CATEGORIES = [
   "Tech",
   "Culture",
   "Economy",
+  "Entertainment",
+  "Esports",
+  "Finance",
+  "Weather",
+] as const;
+
+/** Sub-activities available under the Sports category. */
+export const SPORTS_SUBCATEGORIES = [
+  "All sports",
+  "Football",
+  "Basketball",
+  "Tennis",
+  "Baseball",
+  "Boxing",
+  "MMA",
+  "F1",
+  "Cricket",
+  "Hockey",
+  "Golf",
+  "Rugby",
 ] as const;
 
 export const MARKET_CATEGORIES = CATEGORIES.filter((c) => c !== "All");
