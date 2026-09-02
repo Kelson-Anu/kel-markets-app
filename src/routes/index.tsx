@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MarketCard } from "@/components/MarketCard";
 import { CATEGORIES, SPORTS_SUBCATEGORIES, usd } from "@/lib/markets";
+import { marketsQuery } from "@/lib/market-queries";
+import { usePortfolio } from "@/lib/positions";
 import {
   LayoutGrid,
   Landmark,
@@ -32,8 +34,6 @@ const CATEGORY_META: Record<string, { icon: LucideIcon; anim: string }> = {
   Finance: { icon: LineChart, anim: "cat-anim-blink" },
   Weather: { icon: CloudSun, anim: "cat-anim-float" },
 };
-import { marketsQuery } from "@/lib/market-queries";
-
 const title = "KELMARKET — Trade the odds on real-world events";
 const description =
   "KELMARKET is a prediction market where you trade YES and NO shares on politics, crypto, sports and tech outcomes. Live odds, deep liquidity, instant settlement.";
@@ -60,6 +60,7 @@ function Index() {
   const [sort, setSort] = useState<"default" | "liquidity-desc">("default");
 
   const { data: all } = useSuspenseQuery(marketsQuery);
+  const { balance, ready } = usePortfolio();
 
   const tags = useMemo(
     () => Array.from(new Set(all.flatMap((m) => m.tags))).sort().slice(0, 14),
@@ -104,7 +105,7 @@ function Index() {
               ["Open markets", String(all.length)],
               ["Total volume", usd(totalVolume)],
               ["Total liquidity", usd(totalLiquidity)],
-              ["Starting balance", "$1,000"],
+              ["Your balance", usd(ready ? balance : 1000)],
             ].map(([label, value]) => (
               <div key={label}>
                 <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">
