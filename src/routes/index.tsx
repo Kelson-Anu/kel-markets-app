@@ -3,7 +3,35 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MarketCard } from "@/components/MarketCard";
-import { CATEGORIES, usd } from "@/lib/markets";
+import { CATEGORIES, SPORTS_SUBCATEGORIES, usd } from "@/lib/markets";
+import {
+  LayoutGrid,
+  Landmark,
+  Bitcoin,
+  Trophy,
+  Cpu,
+  Palette,
+  TrendingUp,
+  Clapperboard,
+  Gamepad2,
+  LineChart,
+  CloudSun,
+  type LucideIcon,
+} from "lucide-react";
+
+const CATEGORY_META: Record<string, { icon: LucideIcon; anim: string }> = {
+  All: { icon: LayoutGrid, anim: "cat-anim-pulse" },
+  Politics: { icon: Landmark, anim: "cat-anim-tilt" },
+  Crypto: { icon: Bitcoin, anim: "cat-anim-blink" },
+  Sports: { icon: Trophy, anim: "cat-anim-bounce" },
+  Tech: { icon: Cpu, anim: "cat-anim-spin" },
+  Culture: { icon: Palette, anim: "cat-anim-wiggle" },
+  Economy: { icon: TrendingUp, anim: "cat-anim-tilt" },
+  Entertainment: { icon: Clapperboard, anim: "cat-anim-wiggle" },
+  Esports: { icon: Gamepad2, anim: "cat-anim-pulse" },
+  Finance: { icon: LineChart, anim: "cat-anim-blink" },
+  Weather: { icon: CloudSun, anim: "cat-anim-float" },
+};
 import { marketsQuery } from "@/lib/market-queries";
 
 const title = "KELMARKET — Trade the odds on real-world events";
@@ -27,6 +55,7 @@ function Index() {
   const [category, setCategory] = useState<string>("All");
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
+  const [sport, setSport] = useState<string>("All sports");
   const [catOpen, setCatOpen] = useState(true);
   const [sort, setSort] = useState<"default" | "liquidity-desc">("default");
 
@@ -41,6 +70,9 @@ function Index() {
     const filtered = all.filter(
       (m) =>
         (category === "All" || m.category === category) &&
+        (category !== "Sports" ||
+          sport === "All sports" ||
+          m.tags.includes(sport.toLowerCase())) &&
         (!tag || m.tags.includes(tag)) &&
         m.question.toLowerCase().includes(query.toLowerCase()),
     );
@@ -48,7 +80,7 @@ function Index() {
       filtered.sort((a, b) => b.yesPool + b.noPool - (a.yesPool + a.noPool));
     }
     return filtered;
-  }, [all, category, query, tag, sort]);
+  }, [all, category, query, tag, sort, sport]);
 
   const totalVolume = all.reduce((s, m) => s + m.volume, 0);
   const totalLiquidity = all.reduce((s, m) => s + m.yesPool + m.noPool, 0);
@@ -103,19 +135,49 @@ function Index() {
 
             {catOpen && (
               <div className="mt-2 overflow-hidden rounded-md border border-border bg-card">
-                {CATEGORIES.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCategory(c)}
-                    className={`block w-full px-3.5 py-2 text-left text-sm transition-colors ${
-                      category === c
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
+                {CATEGORIES.map((c) => {
+                  const meta = CATEGORY_META[c];
+                  const Icon = meta?.icon ?? LayoutGrid;
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => setCategory(c)}
+                      className={`flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm transition-colors ${
+                        category === c
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      <span className={`cat-anim ${meta?.anim ?? "cat-anim-pulse"}`}>
+                        <Icon className="h-4 w-4" aria-hidden />
+                      </span>
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {category === "Sports" && (
+              <div className="mt-6 animate-fade-in">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Sporting activity
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {SPORTS_SUBCATEGORIES.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSport(s)}
+                      className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                        sport === s
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
