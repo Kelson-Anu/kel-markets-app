@@ -33,6 +33,7 @@ const CATEGORY_META: Record<string, { icon: LucideIcon; anim: string }> = {
   Weather: { icon: CloudSun, anim: "cat-anim-float" },
 };
 import { marketsQuery } from "@/lib/market-queries";
+import { usePortfolio } from "@/lib/positions";
 
 const title = "KELMARKET — Trade the odds on real-world events";
 const description =
@@ -60,6 +61,7 @@ function Index() {
   const [sort, setSort] = useState<"default" | "liquidity-desc">("default");
 
   const { data: all } = useSuspenseQuery(marketsQuery);
+  const { balance, ready } = usePortfolio();
 
   const tags = useMemo(
     () => Array.from(new Set(all.flatMap((m) => m.tags))).sort().slice(0, 14),
@@ -104,7 +106,7 @@ function Index() {
               ["Open markets", String(all.length)],
               ["Total volume", usd(totalVolume)],
               ["Total liquidity", usd(totalLiquidity)],
-              ["Starting balance", "$1,000"],
+              ["Your balance", usd(ready ? balance : 1000)],
             ].map(([label, value]) => (
               <div key={label}>
                 <dt className="text-[11px] uppercase tracking-widest text-muted-foreground">
