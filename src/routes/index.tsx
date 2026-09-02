@@ -158,6 +158,29 @@ function Index() {
               </div>
             )}
 
+            {category === "Sports" && (
+              <div className="mt-6 animate-fade-in">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Sporting activity
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {SPORTS_SUBCATEGORIES.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSport(s)}
+                      className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                        sport === s
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {tags.length > 0 && (
               <div className="mt-6">
                 <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Tags</p>
