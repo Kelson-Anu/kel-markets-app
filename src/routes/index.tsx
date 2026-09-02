@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MarketCard } from "@/components/MarketCard";
 import { CATEGORIES, SPORTS_SUBCATEGORIES, usd } from "@/lib/markets";
+import { marketsQuery } from "@/lib/market-queries";
+import { usePortfolio } from "@/lib/positions";
 import {
   LayoutGrid,
   Landmark,
