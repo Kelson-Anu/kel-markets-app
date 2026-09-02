@@ -34,9 +34,6 @@ const CATEGORY_META: Record<string, { icon: LucideIcon; anim: string }> = {
   Finance: { icon: LineChart, anim: "cat-anim-blink" },
   Weather: { icon: CloudSun, anim: "cat-anim-float" },
 };
-import { marketsQuery } from "@/lib/market-queries";
-import { usePortfolio } from "@/lib/positions";
-
 const title = "KELMARKET — Trade the odds on real-world events";
 const description =
   "KELMARKET is a prediction market where you trade YES and NO shares on politics, crypto, sports and tech outcomes. Live odds, deep liquidity, instant settlement.";
