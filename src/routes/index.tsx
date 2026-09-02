@@ -80,7 +80,7 @@ function Index() {
       filtered.sort((a, b) => b.yesPool + b.noPool - (a.yesPool + a.noPool));
     }
     return filtered;
-  }, [all, category, query, tag, sort]);
+  }, [all, category, query, tag, sort, sport]);
 
   const totalVolume = all.reduce((s, m) => s + m.volume, 0);
   const totalLiquidity = all.reduce((s, m) => s + m.yesPool + m.noPool, 0);
@@ -135,19 +135,26 @@ function Index() {
 
             {catOpen && (
               <div className="mt-2 overflow-hidden rounded-md border border-border bg-card">
-                {CATEGORIES.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCategory(c)}
-                    className={`block w-full px-3.5 py-2 text-left text-sm transition-colors ${
-                      category === c
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
+                {CATEGORIES.map((c) => {
+                  const meta = CATEGORY_META[c];
+                  const Icon = meta?.icon ?? LayoutGrid;
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => setCategory(c)}
+                      className={`flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm transition-colors ${
+                        category === c
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      <span className={`cat-anim ${meta?.anim ?? "cat-anim-pulse"}`}>
+                        <Icon className="h-4 w-4" aria-hidden />
+                      </span>
+                      {c}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
