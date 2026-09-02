@@ -3,7 +3,35 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MarketCard } from "@/components/MarketCard";
-import { CATEGORIES, usd } from "@/lib/markets";
+import { CATEGORIES, SPORTS_SUBCATEGORIES, usd } from "@/lib/markets";
+import {
+  LayoutGrid,
+  Landmark,
+  Bitcoin,
+  Trophy,
+  Cpu,
+  Palette,
+  TrendingUp,
+  Clapperboard,
+  Gamepad2,
+  LineChart,
+  CloudSun,
+  type LucideIcon,
+} from "lucide-react";
+
+const CATEGORY_META: Record<string, { icon: LucideIcon; anim: string }> = {
+  All: { icon: LayoutGrid, anim: "cat-anim-pulse" },
+  Politics: { icon: Landmark, anim: "cat-anim-tilt" },
+  Crypto: { icon: Bitcoin, anim: "cat-anim-blink" },
+  Sports: { icon: Trophy, anim: "cat-anim-bounce" },
+  Tech: { icon: Cpu, anim: "cat-anim-spin" },
+  Culture: { icon: Palette, anim: "cat-anim-wiggle" },
+  Economy: { icon: TrendingUp, anim: "cat-anim-tilt" },
+  Entertainment: { icon: Clapperboard, anim: "cat-anim-wiggle" },
+  Esports: { icon: Gamepad2, anim: "cat-anim-pulse" },
+  Finance: { icon: LineChart, anim: "cat-anim-blink" },
+  Weather: { icon: CloudSun, anim: "cat-anim-float" },
+};
 import { marketsQuery } from "@/lib/market-queries";
 
 const title = "KELMARKET — Trade the odds on real-world events";
@@ -27,6 +55,7 @@ function Index() {
   const [category, setCategory] = useState<string>("All");
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
+  const [sport, setSport] = useState<string>("All sports");
   const [catOpen, setCatOpen] = useState(true);
   const [sort, setSort] = useState<"default" | "liquidity-desc">("default");
 
@@ -41,6 +70,9 @@ function Index() {
     const filtered = all.filter(
       (m) =>
         (category === "All" || m.category === category) &&
+        (category !== "Sports" ||
+          sport === "All sports" ||
+          m.tags.includes(sport.toLowerCase())) &&
         (!tag || m.tags.includes(tag)) &&
         m.question.toLowerCase().includes(query.toLowerCase()),
     );
