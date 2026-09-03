@@ -38,6 +38,47 @@ const title = "KELMARKET — Trade the odds on real-world events";
 const description =
   "KELMARKET is a prediction market where you trade YES and NO shares on politics, crypto, sports and tech outcomes. Live odds, deep liquidity, instant settlement.";
 
+const SPORT_ANIM: Record<string, string> = {
+  Football: "sport-anim-kick",
+  Basketball: "sport-anim-dribble",
+  Tennis: "sport-anim-serve",
+  Baseball: "sport-anim-swing",
+  Boxing: "sport-anim-tackle",
+  MMA: "sport-anim-dive",
+  F1: "sport-anim-race",
+  Cricket: "sport-anim-spin",
+  Hockey: "sport-anim-puck",
+  Golf: "sport-anim-putt",
+  Rugby: "sport-anim-shot",
+};
+
+function SportDot({ sport }: { sport: string }) {
+  const colors: Record<string, string> = {
+    Football: "#22c55e",
+    Basketball: "#f97316",
+    Tennis: "#eab308",
+    Baseball: "#ef4444",
+    Boxing: "#a855f7",
+    MMA: "#ec4899",
+    F1: "#3b82f6",
+    Cricket: "#14b8a6",
+    Hockey: "#06b6d4",
+    Golf: "#84cc16",
+    Rugby: "#f59e0b",
+  };
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      className="block"
+      aria-hidden="true"
+    >
+      <circle cx="5" cy="5" r="4" fill={colors[sport] ?? "currentColor"} />
+    </svg>
+  );
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
