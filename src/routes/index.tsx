@@ -165,19 +165,25 @@ function Index() {
                   Sporting activity
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {SPORTS_SUBCATEGORIES.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSport(s)}
-                      className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                        sport === s
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  {SPORTS_SUBCATEGORIES.map((s) => {
+                    const anim = SPORT_ANIM[s] ?? "sport-anim-race";
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => setSport(s)}
+                        className={`group flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all hover:-translate-y-0.5 ${
+                          sport === s
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <span className={`sport-anim ${anim}`}>
+                          <SportDot sport={s} />
+                        </span>
+                        {s}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
