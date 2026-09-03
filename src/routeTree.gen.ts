@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as MarketMarketIdRouteImport } from './routes/market.$marketId'
 import { Route as AuthenticatedPreviewMarketIdRouteImport } from './routes/_authenticated/preview.$marketId'
 
@@ -47,6 +48,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketMarketIdRoute = MarketMarketIdRouteImport.update({
   id: '/market/$marketId',
   path: '/market/$marketId',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof PortfolioRoute
   '/verify': typeof VerifyRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/admin/login': typeof AdminLoginRoute
   '/market/$marketId': typeof MarketMarketIdRoute
   '/preview/$marketId': typeof AuthenticatedPreviewMarketIdRoute
 }
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof PortfolioRoute
   '/verify': typeof VerifyRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/admin/login': typeof AdminLoginRoute
   '/market/$marketId': typeof MarketMarketIdRoute
   '/preview/$marketId': typeof AuthenticatedPreviewMarketIdRoute
 }
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/portfolio': typeof PortfolioRoute
   '/verify': typeof VerifyRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/admin/login': typeof AdminLoginRoute
   '/market/$marketId': typeof MarketMarketIdRoute
   '/_authenticated/preview/$marketId': typeof AuthenticatedPreviewMarketIdRoute
 }
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/verify'
     | '/admin'
+    | '/admin/login'
     | '/market/$marketId'
     | '/preview/$marketId'
   fileRoutesByTo: FileRoutesByTo
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/verify'
     | '/admin'
+    | '/admin/login'
     | '/market/$marketId'
     | '/preview/$marketId'
   id:
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/verify'
     | '/_authenticated/admin'
+    | '/admin/login'
     | '/market/$marketId'
     | '/_authenticated/preview/$marketId'
   fileRoutesById: FileRoutesById
@@ -125,6 +137,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PortfolioRoute: typeof PortfolioRoute
   VerifyRoute: typeof VerifyRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   MarketMarketIdRoute: typeof MarketMarketIdRoute
 }
 
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/market/$marketId': {
       id: '/market/$marketId'
       path: '/market/$marketId'
@@ -208,6 +228,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   PortfolioRoute: PortfolioRoute,
   VerifyRoute: VerifyRoute,
+  AdminLoginRoute: AdminLoginRoute,
   MarketMarketIdRoute: MarketMarketIdRoute,
 }
 export const routeTree = rootRouteImport

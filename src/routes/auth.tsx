@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -149,7 +149,7 @@ function AuthPage() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {mode === "signin"
-            ? "Access your KELMARKET portfolio and admin tools."
+            ? "Access your KELMARKET portfolio and trades."
             : "We'll email you a verification link before your account goes live."}
         </p>
 
@@ -235,6 +235,12 @@ function AuthPage() {
               ? "Need an account? Sign up"
               : "Already have an account? Sign in"}
           </button>
+          <Link
+            to="/admin/login"
+            className="block text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            Admin? Use the admin sign in
+          </Link>
         </form>
       </main>
     </div>
