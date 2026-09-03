@@ -218,3 +218,77 @@
 .cat-anim-blink { animation-name: cat-blink; animation-duration: 1.8s; }
 .cat-anim-float { animation-name: cat-float; }
 .cat-anim-tilt { animation-name: cat-tilt; animation-duration: 2s; }
+
+/* Sports subcategory chip animations */
+@keyframes sport-kick {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  25% { transform: rotate(-18deg) translateX(-2px); }
+  50% { transform: rotate(14deg) translateX(2px); }
+  75% { transform: rotate(-6deg) translateX(0); }
+}
+@keyframes sport-dribble {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  40% { transform: translateY(-4px) scale(1.05, 0.95); }
+  60% { transform: translateY(0) scale(0.95, 1.05); }
+}
+@keyframes sport-serve {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-5px) rotate(-30deg); }
+  60% { transform: translateY(0) rotate(30deg); }
+}
+@keyframes sport-swing {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-22deg); }
+  75% { transform: rotate(22deg); }
+}
+@keyframes sport-race {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(3px); }
+  50% { transform: translateX(-1px); }
+  75% { transform: translateX(2px); }
+}
+@keyframes sport-dive {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-10deg); }
+}
+@keyframes sport-shot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+@keyframes sport-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes sport-puck {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(4px) translateY(-2px); }
+  50% { transform: translateX(-3px) translateY(1px); }
+  75% { transform: translateX(2px) translateY(-1px); }
+}
+@keyframes sport-putt {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
+@keyframes sport-tackle {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(-4px) rotate(-8deg); }
+  60% { transform: translateX(4px) rotate(8deg); }
+}
+
+.sport-anim {
+  display: inline-flex;
+  animation-duration: 2.2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.sport-anim-kick { animation-name: sport-kick; }
+.sport-anim-dribble { animation-name: sport-dribble; }
+.sport-anim-serve { animation-name: sport-serve; }
+.sport-anim-swing { animation-name: sport-swing; }
+.sport-anim-race { animation-name: sport-race; }
+.sport-anim-dive { animation-name: sport-dive; }
+.sport-anim-shot { animation-name: sport-shot; }
+.sport-anim-spin { animation-name: sport-spin; animation-duration: 4s; animation-timing-function: linear; }
+.sport-anim-puck { animation-name: sport-puck; }
+.sport-anim-putt { animation-name: sport-putt; }
+.sport-anim-tackle { animation-name: sport-tackle; }
