@@ -39,6 +39,7 @@ const description =
   "KELMARKET is a prediction market where you trade YES and NO shares on politics, crypto, sports and tech outcomes. Live odds, deep liquidity, instant settlement.";
 
 const SPORT_ANIM: Record<string, string> = {
+  "All sports": "sport-anim-race",
   Football: "sport-anim-kick",
   Basketball: "sport-anim-dribble",
   Tennis: "sport-anim-serve",
