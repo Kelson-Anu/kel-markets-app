@@ -38,6 +38,48 @@ const title = "KELMARKET — Trade the odds on real-world events";
 const description =
   "KELMARKET is a prediction market where you trade YES and NO shares on politics, crypto, sports and tech outcomes. Live odds, deep liquidity, instant settlement.";
 
+const SPORT_ANIM: Record<string, string> = {
+  "All sports": "sport-anim-race",
+  Football: "sport-anim-kick",
+  Basketball: "sport-anim-dribble",
+  Tennis: "sport-anim-serve",
+  Baseball: "sport-anim-swing",
+  Boxing: "sport-anim-tackle",
+  MMA: "sport-anim-dive",
+  F1: "sport-anim-race",
+  Cricket: "sport-anim-spin",
+  Hockey: "sport-anim-puck",
+  Golf: "sport-anim-putt",
+  Rugby: "sport-anim-shot",
+};
+
+function SportDot({ sport }: { sport: string }) {
+  const colors: Record<string, string> = {
+    Football: "#22c55e",
+    Basketball: "#f97316",
+    Tennis: "#eab308",
+    Baseball: "#ef4444",
+    Boxing: "#a855f7",
+    MMA: "#ec4899",
+    F1: "#3b82f6",
+    Cricket: "#14b8a6",
+    Hockey: "#06b6d4",
+    Golf: "#84cc16",
+    Rugby: "#f59e0b",
+  };
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      className="block"
+      aria-hidden="true"
+    >
+      <circle cx="5" cy="5" r="4" fill={colors[sport] ?? "currentColor"} />
+    </svg>
+  );
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -165,19 +207,25 @@ function Index() {
                   Sporting activity
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {SPORTS_SUBCATEGORIES.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSport(s)}
-                      className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                        sport === s
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  {SPORTS_SUBCATEGORIES.map((s) => {
+                    const anim = SPORT_ANIM[s] ?? "sport-anim-race";
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => setSport(s)}
+                        className={`group flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all hover:-translate-y-0.5 ${
+                          sport === s
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <span className={`sport-anim ${anim}`}>
+                          <SportDot sport={s} />
+                        </span>
+                        {s}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
