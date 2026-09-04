@@ -2,6 +2,15 @@ export type Outcome = "YES" | "NO";
 
 export type PriceDisplay = "cents" | "percent" | "odds";
 
+export type MarketType = "single" | "versus";
+
+/** An additional question attached to the same market post. */
+export type ExtraQuestion = {
+  question: string;
+  yesLabel: string;
+  noLabel: string;
+};
+
 export type Market = {
   id: string;
   question: string;
@@ -24,6 +33,10 @@ export type Market = {
   noPool: number;
   yesBettors: number;
   noBettors: number;
+  marketType: MarketType;
+  imageUrl: string | null;
+  imageUrl2: string | null;
+  extraQuestions: ExtraQuestion[];
 };
 
 /**
@@ -143,6 +156,10 @@ export type MarketRow = {
   no_pool?: number | string | null;
   yes_bettors?: number | null;
   no_bettors?: number | null;
+  market_type?: string | null;
+  image_url?: string | null;
+  image_url_2?: string | null;
+  extra_questions?: unknown;
 };
 
 export function fromRow(row: MarketRow): Market {
@@ -171,6 +188,10 @@ export function fromRow(row: MarketRow): Market {
     noPool: Number(row.no_pool ?? 0),
     yesBettors: Number(row.yes_bettors ?? 0),
     noBettors: Number(row.no_bettors ?? 0),
+    marketType: row.market_type === "versus" ? "versus" : "single",
+    imageUrl: row.image_url || null,
+    imageUrl2: row.image_url_2 || null,
+    extraQuestions: parseExtraQuestions(row.extra_questions),
   };
 }
 
@@ -183,4 +204,19 @@ export function parseTags(input: string): string[] {
         .filter(Boolean),
     ),
   ).slice(0, 8);
+}
+
+export function parseExtraQuestions(input: unknown): ExtraQuestion[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .map((q) => {
+      const o = (q ?? {}) as Record<string, unknown>;
+      return {
+        question: String(o["question"] ?? "").trim(),
+        yesLabel: String(o["yesLabel"] ?? o["yes_label"] ?? "Yes").trim() || "Yes",
+        noLabel: String(o["noLabel"] ?? o["no_label"] ?? "No").trim() || "No",
+      };
+    })
+    .filter((q) => q.question.length > 0)
+    .slice(0, 10);
 }

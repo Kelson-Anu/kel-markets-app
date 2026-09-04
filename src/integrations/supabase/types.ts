@@ -55,9 +55,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string
+          extra_questions: Json
           history: Json
           id: string
+          image_url: string | null
+          image_url_2: string | null
           liquidity: number
+          market_type: string
           no_bettors: number
           no_label: string
           no_pool: number
@@ -80,9 +84,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string
+          extra_questions?: Json
           history?: Json
           id: string
+          image_url?: string | null
+          image_url_2?: string | null
           liquidity?: number
+          market_type?: string
           no_bettors?: number
           no_label?: string
           no_pool?: number
@@ -105,9 +113,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string
+          extra_questions?: Json
           history?: Json
           id?: string
+          image_url?: string | null
+          image_url_2?: string | null
           liquidity?: number
+          market_type?: string
           no_bettors?: number
           no_label?: string
           no_pool?: number

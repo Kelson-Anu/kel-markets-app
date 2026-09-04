@@ -9,7 +9,9 @@ import {
   PRICE_DISPLAYS,
   parseTags,
   priceLabel,
+  type ExtraQuestion,
   type Market,
+  type MarketType,
   type PriceDisplay,
 } from "@/lib/markets";
 import {
@@ -26,6 +28,7 @@ import {
   revokeAdmin,
   saveMarket,
   setMarketStatus,
+  signMarketImage,
 } from "@/lib/markets.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -53,6 +56,10 @@ type Draft = {
   yesLabel: string;
   noLabel: string;
   priceDisplay: PriceDisplay;
+  marketType: MarketType;
+  imageUrl: string | null;
+  imageUrl2: string | null;
+  extraQuestions: ExtraQuestion[];
 };
 
 const emptyDraft: Draft = {
@@ -66,7 +73,85 @@ const emptyDraft: Draft = {
   yesLabel: "Yes",
   noLabel: "No",
   priceDisplay: "cents",
+  marketType: "single",
+  imageUrl: null,
+  imageUrl2: null,
+  extraQuestions: [],
 };
+
+/** Uploads a picture to the private market image store and returns a viewable link. */
+function ImageUploader({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string | null;
+  onChange: (url: string | null) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  const upload = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Picture must be 5MB or smaller");
+      return;
+    }
+    setBusy(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("market-images")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw new Error(error.message);
+      const { url } = await signMarketImage({ data: { path } });
+      onChange(url);
+      toast.success("Picture uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-[11px] text-muted-foreground">{label}</label>
+      <div className="mt-2 flex items-center gap-3">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-background text-[10px] text-muted-foreground">
+          {value ? (
+            <img src={value} alt={label} className="h-full w-full object-cover" />
+          ) : (
+            "No image"
+          )}
+        </div>
+        <div className="flex-1">
+          <input
+            type="file"
+            accept="image/*"
+            disabled={busy}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) void upload(f);
+            }}
+            className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:text-foreground"
+          />
+          {busy && <p className="mt-1 text-[11px] text-muted-foreground">Uploading…</p>}
+          {value && !busy && (
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="mt-1 text-[11px] text-muted-foreground underline hover:text-foreground"
+            >
+              Remove picture
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -156,6 +241,10 @@ function AdminPage() {
       yesLabel: m.yesLabel,
       noLabel: m.noLabel,
       priceDisplay: m.priceDisplay,
+      marketType: m.marketType,
+      imageUrl: m.imageUrl,
+      imageUrl2: m.imageUrl2,
+      extraQuestions: m.extraQuestions,
     });
 
   if (status.isLoading) {
@@ -389,6 +478,117 @@ function AdminPage() {
                   className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
                 />
               </div>
+            </div>
+
+            <div className="mt-6 rounded-md border border-border p-4">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                Post type &amp; pictures
+              </p>
+              <div className="mt-3 flex gap-2">
+                {(["single", "versus"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setDraft({ ...draft, marketType: t })}
+                    className={`flex-1 rounded-md border px-3 py-2 text-sm capitalize transition-colors ${
+                      draft.marketType === t
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t === "single" ? "Single question" : "Versus (2 pictures)"}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 space-y-4">
+                <ImageUploader
+                  label={draft.marketType === "versus" ? "Picture 1 (positive side)" : "Picture"}
+                  value={draft.imageUrl}
+                  onChange={(url) => setDraft({ ...draft, imageUrl: url })}
+                />
+                {draft.marketType === "versus" && (
+                  <ImageUploader
+                    label="Picture 2 (negative side)"
+                    value={draft.imageUrl2}
+                    onChange={(url) => setDraft({ ...draft, imageUrl2: url })}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-md border border-border p-4">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                Extra questions on this post
+              </p>
+              <div className="mt-3 space-y-3">
+                {draft.extraQuestions.map((q, i) => (
+                  <div key={i} className="rounded-md border border-border p-3">
+                    <input
+                      maxLength={300}
+                      value={q.question}
+                      placeholder="Additional question"
+                      onChange={(e) => {
+                        const next = [...draft.extraQuestions];
+                        next[i] = { ...q, question: e.target.value };
+                        setDraft({ ...draft, extraQuestions: next });
+                      }}
+                      className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                    />
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <input
+                        maxLength={24}
+                        value={q.yesLabel}
+                        placeholder="Yes"
+                        onChange={(e) => {
+                          const next = [...draft.extraQuestions];
+                          next[i] = { ...q, yesLabel: e.target.value };
+                          setDraft({ ...draft, extraQuestions: next });
+                        }}
+                        className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                      />
+                      <input
+                        maxLength={24}
+                        value={q.noLabel}
+                        placeholder="No"
+                        onChange={(e) => {
+                          const next = [...draft.extraQuestions];
+                          next[i] = { ...q, noLabel: e.target.value };
+                          setDraft({ ...draft, extraQuestions: next });
+                        }}
+                        className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          extraQuestions: draft.extraQuestions.filter((_, j) => j !== i),
+                        })
+                      }
+                      className="mt-2 text-[11px] text-muted-foreground underline hover:text-foreground"
+                    >
+                      Remove question
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                disabled={draft.extraQuestions.length >= 10}
+                onClick={() =>
+                  setDraft({
+                    ...draft,
+                    extraQuestions: [
+                      ...draft.extraQuestions,
+                      { question: "", yesLabel: "Yes", noLabel: "No" },
+                    ],
+                  })
+                }
+                className="mt-3 w-full rounded-md border border-border py-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
+              >
+                + Add question
+              </button>
             </div>
 
             <div className="mt-6 rounded-md border border-border p-4">

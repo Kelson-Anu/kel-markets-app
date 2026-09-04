@@ -28,7 +28,41 @@ export function MarketCard({ market }: { market: Market }) {
         </span>
       </div>
 
+      {market.marketType === "versus" && (market.imageUrl || market.imageUrl2) ? (
+        <div className="grid grid-cols-2 gap-2">
+          {[market.imageUrl, market.imageUrl2].map((src, i) =>
+            src ? (
+              <img
+                key={i}
+                src={src}
+                alt={i === 0 ? market.yesLabel : market.noLabel}
+                loading="lazy"
+                className="h-28 w-full rounded-md object-cover"
+              />
+            ) : (
+              <div key={i} className="h-28 w-full rounded-md border border-border bg-secondary" />
+            ),
+          )}
+        </div>
+      ) : (
+        market.imageUrl && (
+          <img
+            src={market.imageUrl}
+            alt={market.question}
+            loading="lazy"
+            className="h-36 w-full rounded-md object-cover"
+          />
+        )
+      )}
+
       <h3 className="text-base font-semibold leading-snug">{market.question}</h3>
+
+      {market.extraQuestions.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          +{market.extraQuestions.length} more question
+          {market.extraQuestions.length > 1 ? "s" : ""} on this post
+        </p>
+      )}
 
       {market.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">

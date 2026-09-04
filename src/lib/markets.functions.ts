@@ -218,6 +218,10 @@ export type MarketInput = {
   yesLabel: string;
   noLabel: string;
   priceDisplay: "cents" | "percent" | "odds";
+  marketType?: "single" | "versus";
+  imageUrl?: string | null;
+  imageUrl2?: string | null;
+  extraQuestions?: { question: string; yesLabel: string; noLabel: string }[];
 };
 
 export const saveMarket = createServerFn({ method: "POST" })
@@ -239,7 +243,11 @@ export const saveMarket = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { walk } = await import("./markets");
+    const { walk, parseExtraQuestions } = await import("./markets");
+    const marketType = data.marketType === "versus" ? "versus" : "single";
+    const extra = parseExtraQuestions(data.extraQuestions ?? []);
+    const image1 = data.imageUrl?.trim() || null;
+    const image2 = marketType === "versus" ? data.imageUrl2?.trim() || null : null;
     const { logAudit, notify } = await import("./audit.server");
     const actorEmail = (context.claims as { email?: string } | null)?.email ?? null;
     if (data.id) {
@@ -256,6 +264,10 @@ export const saveMarket = createServerFn({ method: "POST" })
           yes_label: data.yesLabel.trim(),
           no_label: data.noLabel.trim(),
           price_display: data.priceDisplay,
+          market_type: marketType,
+          image_url: image1,
+          image_url_2: image2,
+          extra_questions: extra,
         })
         .eq("id", data.id);
       if (error) throw new Error(error.message);
@@ -286,6 +298,10 @@ export const saveMarket = createServerFn({ method: "POST" })
       yes_label: data.yesLabel.trim(),
       no_label: data.noLabel.trim(),
       price_display: data.priceDisplay,
+      market_type: marketType,
+      image_url: image1,
+      image_url_2: image2,
+      extra_questions: extra,
       created_by: context.userId,
     });
     if (error) throw new Error(error.message);
@@ -398,4 +414,21 @@ export const deleteMarket = createServerFn({ method: "POST" })
       actorEmail: (context.claims as { email?: string } | null)?.email ?? null,
     });
     return { ok: true };
+  });
+
+/** Admin-only: turn an uploaded market image into a long-lived viewable link. */
+export const signMarketImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { path: string }) => {
+    if (!data.path || data.path.includes("..")) throw new Error("Invalid file path");
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("market-images")
+      .createSignedUrl(data.path, 60 * 60 * 24 * 3650);
+    if (error || !signed?.signedUrl) throw new Error(error?.message ?? "Could not sign image");
+    return { url: signed.signedUrl };
   });

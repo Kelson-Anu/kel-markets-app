@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 export const COLUMNS =
-  "id, question, category, description, yes_price, change_24h, volume, liquidity, closes, history, status, resolution, tags, yes_label, no_label, price_display, updated_at, yes_pool, no_pool, yes_bettors, no_bettors";
+  "id, question, category, description, yes_price, change_24h, volume, liquidity, closes, history, status, resolution, tags, yes_label, no_label, price_display, updated_at, yes_pool, no_pool, yes_bettors, no_bettors, market_type, image_url, image_url_2, extra_questions";
 
 export function publicClient() {
   const SUPABASE_URL = process.env["SUPABASE_URL"];
