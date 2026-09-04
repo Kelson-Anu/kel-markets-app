@@ -2,6 +2,15 @@ export type Outcome = "YES" | "NO";
 
 export type PriceDisplay = "cents" | "percent" | "odds";
 
+export type MarketType = "single" | "versus";
+
+/** An additional question attached to the same market post. */
+export type ExtraQuestion = {
+  question: string;
+  yesLabel: string;
+  noLabel: string;
+};
+
 export type Market = {
   id: string;
   question: string;
