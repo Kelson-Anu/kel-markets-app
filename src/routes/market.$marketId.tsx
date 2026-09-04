@@ -104,7 +104,59 @@ function MarketPage() {
             <span className="rounded-sm bg-secondary px-2 py-0.5 text-[11px] uppercase tracking-widest text-muted-foreground">
               {market.category}
             </span>
+            {market.marketType === "versus" && (market.imageUrl || market.imageUrl2) ? (
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {[
+                  { src: market.imageUrl, label: market.yesLabel },
+                  { src: market.imageUrl2, label: market.noLabel },
+                ].map((it, i) => (
+                  <figure key={i} className="overflow-hidden rounded-lg border border-border">
+                    {it.src ? (
+                      <img src={it.src} alt={it.label} className="h-48 w-full object-cover" />
+                    ) : (
+                      <div className="h-48 w-full bg-secondary" />
+                    )}
+                    <figcaption className="px-3 py-2 text-center text-sm font-semibold">
+                      {it.label}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            ) : (
+              market.imageUrl && (
+                <img
+                  src={market.imageUrl}
+                  alt={market.question}
+                  className="mt-4 h-64 w-full rounded-lg border border-border object-cover"
+                />
+              )
+            )}
             <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">{market.question}</h1>
+            {market.extraQuestions.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Also on this post
+                </p>
+                {market.extraQuestions.map(
+                  (q: { question: string; yesLabel: string; noLabel: string }, i: number) => (
+                    <div
+                      key={i}
+                      className="flex flex-wrap items-center gap-3 rounded-md border border-border bg-card px-4 py-3"
+                    >
+                      <span className="text-sm font-medium">{q.question}</span>
+                      <span className="ml-auto flex gap-2 text-xs">
+                        <span className="rounded-md border border-yes/40 bg-yes/10 px-2 py-1 text-yes">
+                          {q.yesLabel}
+                        </span>
+                        <span className="rounded-md border border-no/40 bg-no/10 px-2 py-1 text-no">
+                          {q.noLabel}
+                        </span>
+                      </span>
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
             {market.tags.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {market.tags.map((t: string) => (
