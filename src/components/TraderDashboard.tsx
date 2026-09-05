@@ -10,6 +10,7 @@ import { payoutLabel, poolSplit, usd, type Market } from "@/lib/markets";
  * positions and their balance, all in one place.
  */
 export function TraderDashboard() {
+  useMarketRealtime();
   const { positions, balance, ready, close } = usePortfolio();
   const live = useQuery(marketsQuery);
   const markets: Market[] = live.data ?? [];
