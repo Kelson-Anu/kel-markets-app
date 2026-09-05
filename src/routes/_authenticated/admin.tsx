@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
+import { TraderDashboard } from "@/components/TraderDashboard";
 import { supabase } from "@/integrations/supabase/client";
 import {
   MARKET_CATEGORIES,
@@ -160,7 +161,7 @@ function AdminPage() {
   const isAdmin = status.data?.isAdmin ?? false;
   const markets = useQuery({ ...adminMarketsQuery, enabled: isAdmin });
   const [draft, setDraft] = useState<Draft>(emptyDraft);
-  const [tab, setTab] = useState<"markets" | "activity" | "admins">("markets");
+  const [tab, setTab] = useState<"markets" | "trader" | "activity" | "admins">("markets");
   const [newAdmin, setNewAdmin] = useState("");
   const audit = useQuery({ ...auditLogQuery, enabled: isAdmin && tab === "activity" });
   const admins = useQuery({ ...adminsQuery, enabled: isAdmin && tab === "admins" });
@@ -303,7 +304,7 @@ function AdminPage() {
         </div>
 
         <div className="mt-6 flex gap-1.5">
-          {(["markets", "activity", "admins"] as const).map((t) => (
+          {(["markets", "trader", "activity", "admins"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -313,10 +314,12 @@ function AdminPage() {
                   : "border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "activity" ? "Activity log" : t}
+              {t === "activity" ? "Activity log" : t === "trader" ? "Trader dashboard" : t}
             </button>
           ))}
         </div>
+
+        {tab === "trader" && <TraderDashboard />}
 
         {tab === "activity" && (
           <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card">
