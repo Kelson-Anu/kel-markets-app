@@ -11,8 +11,21 @@ export type Position = {
   at: number;
 };
 
+export type TradeEvent = {
+  id: string;
+  marketId: string;
+  outcome: Outcome;
+  kind: "open" | "close";
+  shares: number;
+  price: number;
+  amount: number;
+  pnl?: number;
+  at: number;
+};
+
 const KEY = "kelmarkets.positions.v1";
 const BALANCE_KEY = "kelmarkets.balance.v1";
+const HISTORY_KEY = "kelmarkets.history.v1";
 const START_BALANCE = 1000;
 
 function read(): Position[] {
@@ -24,6 +37,20 @@ function read(): Position[] {
   }
 }
 
+function readHistory(): TradeEvent[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]") as TradeEvent[];
+  } catch {
+    return [];
+  }
+}
+
+function pushHistory(event: TradeEvent) {
+  const next = [event, ...readHistory()].slice(0, 200);
+  window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+}
+
 function readBalance(): number {
   if (typeof window === "undefined") return START_BALANCE;
   const raw = window.localStorage.getItem(BALANCE_KEY);
@@ -32,6 +59,7 @@ function readBalance(): number {
 
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
+
 
 export function usePortfolio() {
   const [positions, setPositions] = useState<Position[]>([]);
