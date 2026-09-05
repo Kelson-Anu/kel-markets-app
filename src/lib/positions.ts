@@ -64,11 +64,13 @@ const emit = () => listeners.forEach((l) => l());
 export function usePortfolio() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [balance, setBalance] = useState(START_BALANCE);
+  const [history, setHistory] = useState<TradeEvent[]>([]);
   const [ready, setReady] = useState(false);
 
   const sync = useCallback(() => {
     setPositions(read());
     setBalance(readBalance());
+    setHistory(readHistory());
   }, []);
 
   useEffect(() => {
@@ -117,6 +119,16 @@ export function usePortfolio() {
       }
       window.localStorage.setItem(KEY, JSON.stringify(next));
       window.localStorage.setItem(BALANCE_KEY, String(bal - amount));
+      pushHistory({
+        id: `h-${marketId}-${Date.now()}`,
+        marketId,
+        outcome,
+        kind: "open",
+        shares,
+        price,
+        amount,
+        at: Date.now(),
+      });
       emit();
       return true;
     },
@@ -130,14 +142,26 @@ export function usePortfolio() {
     const proceeds = pos.shares * price;
     window.localStorage.setItem(KEY, JSON.stringify(current.filter((p) => p.id !== positionId)));
     window.localStorage.setItem(BALANCE_KEY, String(readBalance() + proceeds));
+    pushHistory({
+      id: `h-${pos.marketId}-${Date.now()}`,
+      marketId: pos.marketId,
+      outcome: pos.outcome,
+      kind: "close",
+      shares: pos.shares,
+      price,
+      amount: proceeds,
+      pnl: proceeds - pos.cost,
+      at: Date.now(),
+    });
     emit();
   }, []);
 
   const reset = useCallback(() => {
     window.localStorage.setItem(KEY, "[]");
     window.localStorage.setItem(BALANCE_KEY, String(START_BALANCE));
+    window.localStorage.setItem(HISTORY_KEY, "[]");
     emit();
   }, []);
 
-  return { positions, balance, ready, trade, close, reset };
+  return { positions, balance, history, ready, trade, close, reset };
 }
