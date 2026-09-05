@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { marketsQuery } from "@/lib/market-queries";
+import { useMarketRealtime } from "@/lib/use-market-realtime";
 import { usePortfolio } from "@/lib/positions";
 import { payoutLabel, poolSplit, usd, type Market } from "@/lib/markets";
 
@@ -9,6 +10,7 @@ import { payoutLabel, poolSplit, usd, type Market } from "@/lib/markets";
  * positions and their balance, all in one place.
  */
 export function TraderDashboard() {
+  useMarketRealtime();
   const { positions, balance, ready, close } = usePortfolio();
   const live = useQuery(marketsQuery);
   const markets: Market[] = live.data ?? [];
