@@ -28,6 +28,8 @@ function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -48,10 +50,21 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         if (password !== confirm) throw new Error("Passwords do not match");
+        const name = username.trim();
+        if (!/^[a-zA-Z0-9_.-]{3,24}$/.test(name)) {
+          throw new Error("Username must be 3-24 letters, numbers, . _ or -");
+        }
+        const tel = phone.trim();
+        if (tel && !/^\+?[0-9 ()-]{6,20}$/.test(tel)) {
+          throw new Error("Enter a valid phone number");
+        }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: redirectTo() },
+          options: {
+            emailRedirectTo: redirectTo(),
+            data: { username: name, phone: tel },
+          },
         });
         if (error) throw error;
         if (!data.session) {
@@ -157,6 +170,47 @@ function AuthPage() {
           onSubmit={submit}
           className="mt-8 space-y-4 rounded-lg border border-border bg-card p-6"
         >
+          {mode === "signup" && (
+            <>
+              <div>
+                <label
+                  htmlFor="username"
+                  className="text-[11px] uppercase tracking-widest text-muted-foreground"
+                >
+                  Username
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  minLength={3}
+                  maxLength={24}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="text-[11px] uppercase tracking-widest text-muted-foreground"
+                >
+                  Phone number
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  required
+                  maxLength={20}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+                />
+              </div>
+            </>
+          )}
           <div>
             <label
               htmlFor="email"
