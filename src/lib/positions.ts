@@ -156,6 +156,40 @@ export function usePortfolio() {
     emit();
   }, []);
 
+  /**
+   * Settle every open position on a resolved market: winning shares pay out
+   * $1 each, losing shares expire worthless. Idempotent per market.
+   */
+  const settle = useCallback((marketId: string, resolution: Outcome) => {
+    const current = read();
+    const affected = current.filter((p) => p.marketId === marketId);
+    if (affected.length === 0) return 0;
+    let credited = 0;
+    for (const pos of affected) {
+      const won = pos.outcome === resolution;
+      const proceeds = won ? pos.shares : 0;
+      credited += proceeds;
+      pushHistory({
+        id: `h-${pos.marketId}-${pos.outcome}-settle-${Date.now()}`,
+        marketId: pos.marketId,
+        outcome: pos.outcome,
+        kind: "close",
+        shares: pos.shares,
+        price: won ? 1 : 0,
+        amount: proceeds,
+        pnl: proceeds - pos.cost,
+        at: Date.now(),
+      });
+    }
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify(current.filter((p) => p.marketId !== marketId)),
+    );
+    window.localStorage.setItem(BALANCE_KEY, String(readBalance() + credited));
+    emit();
+    return affected.length;
+  }, []);
+
   const reset = useCallback(() => {
     window.localStorage.setItem(KEY, "[]");
     window.localStorage.setItem(BALANCE_KEY, String(START_BALANCE));
@@ -163,5 +197,23 @@ export function usePortfolio() {
     emit();
   }, []);
 
-  return { positions, balance, history, ready, trade, close, reset };
+  return { positions, balance, history, ready, trade, close, settle, reset };
+}
+
+/**
+ * Watches resolved markets and settles the trader's matching open positions
+ * as soon as an admin sets an outcome, so balances and P&L update live.
+ */
+export function useAutoSettle(
+  markets: { id: string; resolution: "YES" | "NO" | null }[],
+  positions: Position[],
+  settle: (marketId: string, resolution: Outcome) => number,
+) {
+  useEffect(() => {
+    for (const m of markets) {
+      if (!m.resolution) continue;
+      if (!positions.some((p) => p.marketId === m.id)) continue;
+      settle(m.id, m.resolution);
+    }
+  }, [markets, positions, settle]);
 }
