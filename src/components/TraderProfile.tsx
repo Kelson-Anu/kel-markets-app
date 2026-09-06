@@ -16,6 +16,7 @@ const when = (ts: number) => new Date(ts).toLocaleString();
 export function TraderProfile() {
   useMarketRealtime();
   const { user } = useSession();
+  const profile = useTraderProfile().data;
   const { positions, balance, history, ready } = usePortfolio();
   const live = useQuery(marketsQuery);
   const markets: Market[] = live.data ?? [];
