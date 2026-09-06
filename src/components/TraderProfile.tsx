@@ -51,10 +51,19 @@ export function TraderProfile() {
     <div className="mt-6 space-y-8">
       <div className="rounded-lg border border-border bg-card p-5">
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Trader</p>
-        <p className="mt-1 text-lg font-semibold">{user?.email ?? "Guest trader"}</p>
+        <p className="mt-1 text-lg font-semibold">
+          {profile?.username ?? user?.email ?? "Guest trader"}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {[user?.email, profile?.phone].filter(Boolean).join(" · ") || "Not signed in"}
+        </p>
         <p className="mt-1 text-xs text-muted-foreground">
           {positions.length} open position{positions.length === 1 ? "" : "s"}
-          {firstTrade ? ` · trading since ${new Date(firstTrade).toLocaleDateString()}` : ""}
+          {profile?.created_at
+            ? ` · member since ${new Date(profile.created_at).toLocaleDateString()}`
+            : firstTrade
+              ? ` · trading since ${new Date(firstTrade).toLocaleDateString()}`
+              : ""}
         </p>
       </div>
 
