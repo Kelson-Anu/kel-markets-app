@@ -4,6 +4,7 @@ import { marketsQuery } from "@/lib/market-queries";
 import { useMarketRealtime } from "@/lib/use-market-realtime";
 import { usePortfolio } from "@/lib/positions";
 import { useSession } from "@/lib/use-session";
+import { useTraderProfile } from "@/lib/use-profile";
 import { usd, type Market } from "@/lib/markets";
 
 const when = (ts: number) => new Date(ts).toLocaleString();
