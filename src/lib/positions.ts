@@ -197,5 +197,23 @@ export function usePortfolio() {
     emit();
   }, []);
 
-  return { positions, balance, history, ready, trade, close, reset };
+  return { positions, balance, history, ready, trade, close, settle, reset };
+}
+
+/**
+ * Watches resolved markets and settles the trader's matching open positions
+ * as soon as an admin sets an outcome, so balances and P&L update live.
+ */
+export function useAutoSettle(
+  markets: { id: string; resolution: "YES" | "NO" | null }[],
+  positions: Position[],
+  settle: (marketId: string, resolution: Outcome) => number,
+) {
+  useEffect(() => {
+    for (const m of markets) {
+      if (!m.resolution) continue;
+      if (!positions.some((p) => p.marketId === m.id)) continue;
+      settle(m.id, m.resolution);
+    }
+  }, [markets, positions, settle]);
 }
